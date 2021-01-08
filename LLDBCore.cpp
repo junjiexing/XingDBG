@@ -3,11 +3,13 @@
 //
 
 #include "LLDBCore.h"
+
+#include <utility>
 #include "App.h"
 
 
-LLDBCore::LLDBCore(QString const& path, QString const& args)
-	:m_path(path), m_args(args)
+LLDBCore::LLDBCore(QString  path, QString  args)
+	:m_path(std::move(path)), m_args(std::move(args))
 {
 }
 
@@ -19,10 +21,12 @@ void LLDBCore::run()
 
 bool LLDBCore::init()
 {
-//	auto err = lldb::SBDebugger::InitializeWithErrorHandling();
-//	if (err.Fail())
-//	{
-//		return false;
-//	}
+	auto err = lldb::SBDebugger::InitializeWithErrorHandling();
+	if (err.Fail())
+	{
+		App::get()->logError(QString("LLDBCore: 初始化lldb引擎失败: %1").arg(err.GetCString()));
+		return false;
+	}
+	App::get()->logInfo(QString("LLDBCore: 初始化lldb引擎成功"));
 	return true;
 }

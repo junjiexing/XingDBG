@@ -11,7 +11,7 @@ class LLDBCore : public QThread
 	Q_OBJECT
 
 public:
-	explicit LLDBCore(QString const& path, QString const& args);
+	explicit LLDBCore(QString path, QString args);
 
 	static bool init();
 
