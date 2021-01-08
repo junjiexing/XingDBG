@@ -5,13 +5,18 @@
 #include "MainWindow.h"
 #include <kddockwidgets/DockWidget.h>
 #include <QtWidgets>
+#include <memory>
+#include "App.h"
 
 
 MainWindow::MainWindow()
 		: KDDockWidgets::MainWindow("XingDBG")
 {
 	auto fileMenu = menuBar()->addMenu("文件");
-	fileMenu->addAction("打开可执行程序");
+	fileMenu->addAction("打开可执行程序", this, [this] {
+		m_lldbCore = std::make_unique<LLDBCore>(R"(D:\msys64\home\w4264\a.exe)", "");
+		m_lldbCore->start();
+	});
 	fileMenu->addAction("附加进程");
 	fileMenu->addAction("远程调试");
 	fileMenu->addAction("打开源文件");
@@ -31,23 +36,27 @@ MainWindow::MainWindow()
 	viewMenu->addAction("保存布局", this, [this]
 	{
 		KDDockWidgets::LayoutSaver saver;
-		const bool result = saver.saveToFile(QStringLiteral("main_layout.json"));
+		const bool result = saver.saveToFile("main_layout.json");
 		statusBar()->showMessage(result? "保存布局成功": "保存布局失败");
 	});
 	viewMenu->addAction("加载布局", this, [this]
 	{
 		KDDockWidgets::LayoutSaver saver;
-		const bool result = saver.restoreFromFile(QStringLiteral("main_layout.json"));
+		const bool result = saver.restoreFromFile("main_layout.json");
 		statusBar()->showMessage(result? "加载布局成功": "加载布局失败");
 	});
 	auto helpMenu = menuBar()->addMenu("帮助");
 	helpMenu->addAction("关于");
 
 
-	auto dock1 = new KDDockWidgets::DockWidget("输出");
-	auto widget1 = new QLabel("输出");
-	widget1->setStyleSheet("background: red;");
-	dock1->setWidget(widget1);
+	auto outputDock = new KDDockWidgets::DockWidget("输出");
+	auto outputEdt = new QTextEdit;
+	outputEdt->setReadOnly(true);
+	outputDock->setWidget(outputEdt);
+	connect(App::get(), &App::outputMsg, outputEdt, [outputEdt](QString const& msg, QColor const& color){
+		outputEdt->setTextColor(color);
+		outputEdt->append(msg);
+	});
 
 	auto dock2 = new KDDockWidgets::DockWidget("寄存器");
 	auto widget2 = new QLabel("寄存器");
@@ -83,7 +92,7 @@ MainWindow::MainWindow()
 	dock7->show();
 
 
-	addDockWidget(dock1, KDDockWidgets::Location_OnLeft);
+	addDockWidget(outputDock, KDDockWidgets::Location_OnLeft);
 	addDockWidget(dock2, KDDockWidgets::Location_OnTop);
 
 	addDockWidget(dock3, KDDockWidgets::Location_OnRight, dock2);
@@ -91,4 +100,10 @@ MainWindow::MainWindow()
 	dock4->show();
 
 	statusBar()->showMessage("Done.");
+
+
+	App::get()->logError("Error");
+	App::get()->logWarn("Warn");
+	App::get()->logInfo("Info");
+
 }

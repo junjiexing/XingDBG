@@ -5,6 +5,8 @@
 #pragma once
 
 #include <kddockwidgets/MainWindow.h>
+#include "LLDBCore.h"
+#include <memory>
 
 
 class MainWindow : public KDDockWidgets::MainWindow
@@ -13,6 +15,8 @@ class MainWindow : public KDDockWidgets::MainWindow
 public:
 	MainWindow();
 
+private:
+	std::unique_ptr<LLDBCore> m_lldbCore;
 };
 
 
