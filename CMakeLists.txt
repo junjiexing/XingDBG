@@ -18,5 +18,5 @@ add_subdirectory(3rdparty/KDDockWidgets)
 
 include_directories(3rdparty/KDDockWidgets/src/fwd_headers)
 
-add_executable(${PROJECT_NAME} WIN32 main.cpp MyWidget.cpp MainWindow.cpp MainWindow.h)
+add_executable(${PROJECT_NAME} WIN32 main.cpp MainWindow.cpp MainWindow.h)
 target_link_libraries(${PROJECT_NAME} ${REQUIRED_LIBS_QUALIFIED} KDAB::kddockwidgets)
