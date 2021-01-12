@@ -103,9 +103,4 @@ MainWindow::MainWindow()
 
 
 	LLDBCore::init();
-
-	App::get()->logError("Error");
-	App::get()->logWarn("Warn");
-	App::get()->logInfo("Info");
-
 }

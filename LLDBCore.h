@@ -25,6 +25,12 @@ protected:
 private:
 	QString m_path;
 	QString m_args;
+
+	lldb::SBDebugger m_debugger;
+	lldb::SBListener m_listener;
+	lldb::SBTarget m_target;
+	lldb::SBProcess m_process;
+	lldb::SBEvent m_event;
 };
 
 
