@@ -7,15 +7,19 @@
 #include <QtWidgets>
 #include <memory>
 #include "App.h"
+#include "DisassemblyView.h"
+#include "RegisterView.h"
+#include "ThreadView.h"
+#include "CallStackView.h"
 
 
 MainWindow::MainWindow()
 		: KDDockWidgets::MainWindow("XingDBG")
 {
 	auto fileMenu = menuBar()->addMenu("文件");
-	fileMenu->addAction("打开可执行程序", this, [this] {
-		m_lldbCore = std::make_unique<LLDBCore>(R"(D:\msys64\home\w4264\a.exe)", "");
-		m_lldbCore->start();
+	auto openAct = fileMenu->addAction("打开可执行程序", this, [] {
+		App::get()->launch(R"(E:\msys64\home\xing\a.exe)", "");
+		App::get()->getDbgCore()->start();
 	});
 	fileMenu->addAction("附加进程");
 	fileMenu->addAction("远程调试");
@@ -41,12 +45,20 @@ MainWindow::MainWindow()
 	});
 	viewMenu->addAction("加载布局", this, [this]
 	{
-		KDDockWidgets::LayoutSaver saver;
+		KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
 		const bool result = saver.restoreFromFile("main_layout.json");
 		statusBar()->showMessage(result? "加载布局成功": "加载布局失败");
 	});
 	auto helpMenu = menuBar()->addMenu("帮助");
-	helpMenu->addAction("关于");
+	auto aboutAct = helpMenu->addAction("关于");
+
+	auto helpToolBar = new QToolBar("帮助", this);
+	helpToolBar->addAction(aboutAct);
+	addToolBar(helpToolBar);
+
+	auto fileToolBar = new QToolBar("文件", this);
+	fileToolBar->addAction(openAct);
+	addToolBar(fileToolBar);
 
 
 	auto outputDock = new KDDockWidgets::DockWidget("输出");
@@ -58,26 +70,10 @@ MainWindow::MainWindow()
 		outputEdt->append(msg);
 	});
 
-	auto dock2 = new KDDockWidgets::DockWidget("寄存器");
-	auto widget2 = new QLabel("寄存器");
-	widget2->setStyleSheet("background: blue;");
-	dock2->setWidget(widget2);
-
-	auto dock3 = new KDDockWidgets::DockWidget("调用堆栈");
-	auto widget3 = new QLabel("调用堆栈");
-	widget3->setStyleSheet("background: green;");
-	dock3->setWidget(widget3);
-
 	auto dock4 = new KDDockWidgets::DockWidget("内存");
 	auto widget4 = new QLabel("内存");
 	widget4->setStyleSheet("background: yellow;");
 	dock4->setWidget(widget4);
-
-	auto dock5 = new KDDockWidgets::DockWidget("线程");
-	auto widget5 = new QLabel("线程");
-	widget5->setStyleSheet("background: pink;");
-	dock5->setWidget(widget5);
-	dock5->show();
 
 	auto dock6 = new KDDockWidgets::DockWidget("监视");
 	auto widget6 = new QLabel("监视");
@@ -91,14 +87,23 @@ MainWindow::MainWindow()
 	dock7->setWidget(widget7);
 	dock7->show();
 
+	auto disasmDock = new DisassemblyView();
+	disasmDock->show();
+
+	auto registerView = new RegisterView();
+	registerView->show();
+
+	auto threadView = new ThreadView();
+	threadView->show();
+
+	auto callStackView = new CallStackView();
+	callStackView->show();
+
 
 	addDockWidget(outputDock, KDDockWidgets::Location_OnLeft);
-	addDockWidget(dock2, KDDockWidgets::Location_OnTop);
-
-	addDockWidget(dock3, KDDockWidgets::Location_OnRight, dock2);
+//	addDockWidget(dock2, KDDockWidgets::Location_OnTop);
 
 	dock4->show();
-
 	statusBar()->showMessage("Done.");
 
 

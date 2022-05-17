@@ -16,7 +16,7 @@ public:
 	MainWindow();
 
 private:
-	std::unique_ptr<LLDBCore> m_lldbCore;
+
 };
 
 

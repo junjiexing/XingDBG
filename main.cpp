@@ -7,10 +7,6 @@
 
 int main(int argc, char **argv)
 {
-#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-#endif
     QApplication app(argc, argv);
 
     app.setOrganizationName("LaoXing");
@@ -21,6 +17,9 @@ int main(int argc, char **argv)
 
 	auto flags = KDDockWidgets::Config::self().flags();
 	flags |= KDDockWidgets::Config::Flag_AutoHideSupport;
+	flags |= KDDockWidgets::Config::Flag_AllowReorderTabs;
+	flags |= KDDockWidgets::Config::Flag_HideTitleBarWhenTabsVisible;
+	flags |= KDDockWidgets::Config::Flag_TabsHaveCloseButton;
 	KDDockWidgets::Config::self().setFlags(flags);
 
     MainWindow mainWindow;

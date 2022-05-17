@@ -4,6 +4,7 @@
 
 #pragma once
 #include <QThread>
+#include <memory>
 #include <lldb/API/LLDB.h>
 
 class LLDBCore : public QThread
@@ -12,17 +13,23 @@ class LLDBCore : public QThread
 
 public:
 	explicit LLDBCore(QString path, QString args);
+	~LLDBCore() override;
 
 	static bool init();
 
-signals:
+	[[nodiscard]] lldb::SBProcess const&  getProcess() const {return m_process;}
+	[[nodiscard]] lldb::SBProcess&  getProcess() {return m_process;}
+	[[nodiscard]] lldb::SBTarget const& getTarget() const {return m_target;}
+	[[nodiscard]] lldb::SBTarget& getTarget() {return m_target;}
 
-	void debugeeExited(int status);
 
 protected:
 	void run() override;
 
 private:
+	static std::unique_ptr<LLDBCore> instance;
+
+
 	QString m_path;
 	QString m_args;
 
