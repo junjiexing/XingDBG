@@ -3,11 +3,10 @@
 //
 
 #pragma once
-#include <kddockwidgets/DockWidget.h>
 #include <QTableWidget>
 
 
-class ThreadView : public KDDockWidgets::DockWidget
+class ThreadView : public QTableWidget
 {
 	Q_OBJECT
 
@@ -17,8 +16,6 @@ public:
 public slots:
 	void refresh();
 
-private:
-	QTableWidget* m_tableWidget;
 };
 
 

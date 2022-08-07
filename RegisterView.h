@@ -3,13 +3,12 @@
 //
 
 #pragma once
-#include <kddockwidgets/DockWidget.h>
 #include <QTreeWidget>
 #include "LLDBCore.h"
 
 
 
-class RegisterView final : public KDDockWidgets::DockWidget
+class RegisterView final : public QTreeWidget
 {
 	Q_OBJECT
 
@@ -21,9 +20,8 @@ public slots:
 
 private:
 	void addValue(lldb::SBValue value, QTreeWidgetItem* parent);
-
-private:
-	QTreeWidget* m_treeWidget;
+protected:
+	void contextMenuEvent(QContextMenuEvent *event) override;
 };
 
 

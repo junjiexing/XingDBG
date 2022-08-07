@@ -19,5 +19,30 @@ add_subdirectory(3rdparty/KDDockWidgets)
 
 include_directories(3rdparty/KDDockWidgets/src/fwd_headers)
 
-add_executable(${PROJECT_NAME} WIN32 main.cpp MainWindow.cpp MainWindow.h LLDBCore.cpp LLDBCore.h App.cpp App.h DisassemblyView.cpp DisassemblyView.h RegisterView.cpp RegisterView.h ThreadView.cpp ThreadView.h CallStackView.cpp CallStackView.h)
+add_executable(${PROJECT_NAME}
+#        WIN32
+        main.cpp
+        MainWindow.cpp
+        MainWindow.h
+        LLDBCore.cpp
+        LLDBCore.h
+        App.cpp
+        App.h
+        DisassemblyView.cpp
+        DisassemblyView.h
+        RegisterView.cpp
+        RegisterView.h
+        ThreadView.cpp
+        ThreadView.h
+        CallStackView.cpp
+        CallStackView.h
+        OutputView.cpp
+        OutputView.h
+        HexView.cpp
+        HexView.h
+        MemoryView.cpp
+        MemoryView.h
+        AbstractTableView.cpp
+        AbstractTableView.h
+        )
 target_link_libraries(${PROJECT_NAME} ${REQUIRED_LIBS_QUALIFIED} KDAB::kddockwidgets lldb.dll)

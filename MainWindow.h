@@ -5,6 +5,8 @@
 #pragma once
 
 #include <kddockwidgets/MainWindow.h>
+#include <kddockwidgets/DockWidget.h>
+
 #include "LLDBCore.h"
 #include <memory>
 
@@ -16,6 +18,8 @@ public:
 	MainWindow();
 
 private:
+	void setupDockWidgets();
+
 
 };
 

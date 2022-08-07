@@ -6,10 +6,9 @@
 #include "App.h"
 
 CallStackView::CallStackView()
-	:KDDockWidgets::DockWidget("调用堆栈"),
-	m_listWidget(new QListWidget)
+	: QListWidget(nullptr)
 {
-	setWidget(m_listWidget);
+	setFrameStyle(QFrame::NoFrame);
 
 	connect(App::get(), &App::onStopState, this, [this]
 	{
@@ -23,7 +22,7 @@ CallStackView::CallStackView()
 		auto process = App::get()->getDbgCore()->getProcess();
 		setThread(process.GetThreadByID(tid));
 	});
-	connect(m_listWidget, &QListWidget::doubleClicked, this, [this](const QModelIndex &index)
+	connect(this, &QListWidget::doubleClicked, this, [this](const QModelIndex &index)
 	{
 		emit App::get()->onThreadFrameChanged(m_tid, index.row());
 	});
@@ -33,13 +32,13 @@ void CallStackView::setThread(lldb::SBThread thread)
 {
 	m_tid = thread.GetThreadID();
 
-	m_listWidget->clear();
+	clear();
 
 	for (int i = 0; i < thread.GetNumFrames(); ++i)
 	{
 		auto frame = thread.GetFrameAtIndex(i);
 		lldb::SBStream description;
 		frame.GetDescription(description);
-		m_listWidget->addItem(description.GetData());
+		addItem(description.GetData());
 	}
 }

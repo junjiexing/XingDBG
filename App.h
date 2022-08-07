@@ -31,6 +31,7 @@ signals:
 	void debugeeExited(int status);
 	void onStopState();
 	void onThreadFrameChanged(uint64_t tid, int index);
+	void gotoMemory(uint64_t address);
 
 
 private:

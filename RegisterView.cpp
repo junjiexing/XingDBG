@@ -5,15 +5,19 @@
 #include "RegisterView.h"
 #include "App.h"
 #include "LLDBCore.h"
+#include <QContextMenuEvent>
+#include <QMenu>
+#include <QApplication>
+#include <QClipboard>
 
 
 RegisterView::RegisterView()
-	:KDDockWidgets::DockWidget("寄存器"),
-	m_treeWidget(new QTreeWidget(this))
+	: QTreeWidget(nullptr)
 {
-	m_treeWidget->setColumnCount(2);
-	m_treeWidget->setHeaderHidden(true);
-	setWidget(m_treeWidget);
+	setColumnCount(2);
+	setHeaderHidden(true);
+	setFrameStyle(QFrame::NoFrame);
+
 	connect(App::get(), &App::onStopState, this, [this]
 	{
 		auto const &process = App::get()->getDbgCore()->getProcess();
@@ -29,7 +33,7 @@ RegisterView::RegisterView()
 void RegisterView::setThreadFrame(lldb::SBThread thread, int index)
 {
 	// TODO: process.GetAddressByteSize()
-	m_treeWidget->clear();
+	clear();
 	auto const &target = App::get()->getDbgCore()->getTarget();
 
 	auto frame = thread.GetFrameAtIndex(index);
@@ -41,9 +45,10 @@ void RegisterView::setThreadFrame(lldb::SBThread thread, int index)
 		addValue(reg, nullptr);
 	}
 
-	m_treeWidget->expandAll();
+	expandAll();
 }
-void RegisterView::addValue(lldb::SBValue value, QTreeWidgetItem* parent)
+
+void RegisterView::addValue(lldb::SBValue value, QTreeWidgetItem *parent)
 {
 	auto item = new QTreeWidgetItem(parent);
 	item->setTextAlignment(0, Qt::AlignLeft);
@@ -65,6 +70,39 @@ void RegisterView::addValue(lldb::SBValue value, QTreeWidgetItem* parent)
 
 	if (!parent)
 	{
-		m_treeWidget->addTopLevelItem(item);
+		addTopLevelItem(item);
 	}
+}
+
+void RegisterView::contextMenuEvent(QContextMenuEvent * event)
+{
+	auto item = currentItem();
+	if (!item) return;
+
+	auto txt = item->text(1);
+	auto ok = false;
+	auto value = txt.toULongLong(&ok, 16);
+	if (!ok) return;
+
+	QMenu menu;
+	menu.addAction(tr("Copy"), this, [txt]
+	{
+		qApp->clipboard()->setText(txt);
+	});
+
+	{
+		auto process = App::get()->getDbgCore()->getProcess();
+		lldb::SBMemoryRegionInfo info;
+		auto err = process.GetMemoryRegionInfo(value, info);
+
+		if (err.Success() && info.IsReadable())
+		{
+			menu.addAction("View in memory dump", this, [value]
+			{
+				emit App::get()->gotoMemory(value);
+			});
+		}
+	}
+
+	menu.exec(event->globalPos());
 }

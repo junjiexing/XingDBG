@@ -8,22 +8,22 @@
 
 
 ThreadView::ThreadView()
-	:KDDockWidgets::DockWidget("线程"),
-	m_tableWidget(new QTableWidget(this))
+	: QTableWidget(nullptr)
 {
-	m_tableWidget->setColumnCount(3);
-	m_tableWidget->setHorizontalHeaderLabels(QStringList() << "id" << "pc" << "注释");
-	m_tableWidget->setSelectionBehavior(QAbstractItemView::SelectRows);
-	setWidget(m_tableWidget);
+	setColumnCount(3);
+	setFrameStyle(QFrame::NoFrame);
+
+	setHorizontalHeaderLabels(QStringList() << "id" << "pc" << "注释");
+	setSelectionBehavior(QAbstractItemView::SelectRows);
 	connect(App::get(), &App::onStopState, this, &ThreadView::refresh);
 
-	connect(m_tableWidget, &QTableWidget::doubleClicked, this, [this](const QModelIndex &index)
+	connect(this, &QTableWidget::doubleClicked, this, [this](const QModelIndex &index)
 	{
-		auto item = m_tableWidget->item(index.row(), 0);
-		if (!item) return;
+		auto it = item(index.row(), 0);
+		if (!it) return;
 
 		bool ok = false;
-		auto tid = item->text().toULongLong(&ok);
+		auto tid = it->text().toULongLong(&ok);
 		if (!ok) return;	// TODO: log
 		emit App::get()->onThreadFrameChanged(tid, 0);
 	});
@@ -40,14 +40,14 @@ void ThreadView::refresh()
 {
 	auto &process = App::get()->getDbgCore()->getProcess();
 	auto num = process.GetNumThreads();
-	m_tableWidget->setRowCount(int(num));
+	setRowCount(int(num));
 	for (int i = 0; i < num; ++i)
 	{
 		auto thread = process.GetThreadAtIndex(i);
-		m_tableWidget->setItem(i, 0, newItem(QString::number(thread.GetThreadID())));
-		m_tableWidget->setItem(i, 1, newItem(QStringLiteral("%1").arg(thread.GetSelectedFrame().GetPC(), 16, 16, QLatin1Char('0'))));
+		setItem(i, 0, newItem(QString::number(thread.GetThreadID())));
+		setItem(i, 1, newItem(QStringLiteral("%1").arg(thread.GetSelectedFrame().GetPC(), 16, 16, QLatin1Char('0'))));
 		lldb::SBStream description;
 		thread.GetDescription(description);
-		m_tableWidget->setItem(i, 2, newItem(description.GetData()));
+		setItem(i, 2, newItem(description.GetData()));
 	}
 }
