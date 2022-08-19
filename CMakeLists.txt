@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.17)
 project(XingDBG)
 
 set(CMAKE_CXX_STANDARD 20)
-set(KDDockWidgets_QT6 ON)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
@@ -10,11 +9,15 @@ set(CMAKE_AUTOUIC ON)
 set(QT_VERSION 6)
 set(REQUIRED_LIBS Core Gui Widgets)
 set(REQUIRED_LIBS_QUALIFIED Qt6::Core Qt6::Gui Qt6::Widgets)
-
-
 find_package(Qt${QT_VERSION} COMPONENTS ${REQUIRED_LIBS} REQUIRED)
 
-set(KDDockWidgets_STATIC true)
+# TODO: find_package lldb
+
+set(KDDockWidgets_QT6 ON)
+set(build_for_qt6 ON)
+set(build_examples OFF)
+set(KDDockWidgets_STATIC ON)
+set(build_static ON)
 add_subdirectory(3rdparty/KDDockWidgets)
 
 include_directories(3rdparty/KDDockWidgets/src/fwd_headers)
