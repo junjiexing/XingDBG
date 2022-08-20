@@ -12,15 +12,19 @@ class LLDBCore : public QThread
 	Q_OBJECT
 
 public:
-	explicit LLDBCore(QString path, QString args);
+	explicit LLDBCore();
 	~LLDBCore() override;
 
 	static bool init();
 
-	[[nodiscard]] lldb::SBProcess const&  getProcess() const {return m_process;}
-	[[nodiscard]] lldb::SBProcess&  getProcess() {return m_process;}
-	[[nodiscard]] lldb::SBTarget const& getTarget() const {return m_target;}
-	[[nodiscard]] lldb::SBTarget& getTarget() {return m_target;}
+    bool launch(QString const& exePath, QString const& workingDir, QString const& stdoutPath,
+                QString const& stderrPath, QString const& stdinPath, QStringList const& argList,
+                QStringList const& envList, uint32_t launchFlags);
+
+	lldb::SBProcess const&  getProcess() const {return m_process;}
+	lldb::SBProcess&  getProcess() {return m_process;}
+	lldb::SBTarget const& getTarget() const {return m_target;}
+	lldb::SBTarget& getTarget() {return m_target;}
 
 
 protected:
@@ -28,10 +32,6 @@ protected:
 
 private:
 	static std::unique_ptr<LLDBCore> instance;
-
-
-	QString m_path;
-	QString m_args;
 
 	lldb::SBDebugger m_debugger;
 	lldb::SBListener m_listener;

@@ -2,40 +2,22 @@
 // Created by w4264 on 2021/1/8.
 //
 
-#include <iostream>
 #include "LLDBCore.h"
-
-#include <utility>
 #include "App.h"
+#include <vector>
 
 
-LLDBCore::LLDBCore(QString  path, QString  args)
-	:m_path(std::move(path)), m_args(std::move(args))
+LLDBCore::LLDBCore()
 {
 }
 
-static void log(const char *msg, void *) {
+static void log(const char *msg, void *)
+{
 	App::get()->logInfo(QString("LLDBCore: log: %1").arg(msg));
 }
 
 void LLDBCore::run()
 {
-	m_debugger = lldb::SBDebugger::Create(true, &log, nullptr);
-	m_listener = lldb::SBListener("lldb_local");
-	m_target = m_debugger.CreateTarget(m_path.toLocal8Bit());
-	auto bp = m_target.BreakpointCreateByName("main");
-	bp.SetEnabled(true);
-	lldb::SBError error;
-	m_process = m_target.Launch(m_listener, nullptr, nullptr, nullptr, nullptr,
-			nullptr, R"(E:\msys64\home\xing\)",
-			lldb::eLaunchFlagNone, false, error);
-
-	if (error.Fail())
-	{
-		App::get()->logWarn(QString("LLDBCore: 加载可执行程序失败：").arg(error.GetCString()));
-		return;
-	}
-
 	for (;;)
 	{
 		if (!m_listener.WaitForEvent(std::numeric_limits<uint32_t>::max(), m_event))
@@ -44,7 +26,7 @@ void LLDBCore::run()
 			return;
 		}
 
-		std::cout << "event: " << m_event.GetType() << std::endl;
+//		std::cout << "event: " << m_event.GetType() << std::endl;
 
 		if((m_event.GetType() & lldb::SBProcess::eBroadcastBitStateChanged) > 0)
 		{
@@ -82,7 +64,7 @@ void LLDBCore::run()
 			while((n = m_process.GetSTDOUT(buffer, 100)) != 0)
 				str += std::string(buffer, n);
 
-			std::cout << str << std::endl;
+//			std::cout << str << std::endl;
 		}
 		if((m_event.GetType() & lldb::SBProcess::eBroadcastBitSTDERR) > 0)
 		{
@@ -92,12 +74,12 @@ void LLDBCore::run()
 			while((n = m_process.GetSTDERR(buffer, 100)) != 0)
 				str += std::string(buffer, n);
 
-			std::cout << str << std::endl;
+//			std::cout << str << std::endl;
 		}
 		if((m_event.GetType() & lldb::SBProcess::eBroadcastBitInterrupt) > 0)
 		{
 			auto state = lldb::SBProcess::GetStateFromEvent(m_event);
-			std::cout << "eBroadcastBitInterrupt:" << state << std::endl;
+//			std::cout << "eBroadcastBitInterrupt:" << state << std::endl;
 		}
 	}
 
@@ -110,10 +92,10 @@ bool LLDBCore::init()
 	auto err = lldb::SBDebugger::InitializeWithErrorHandling();
 	if (err.Fail())
 	{
-		App::get()->logError(QString("LLDBCore: 初始化lldb引擎失败: %1").arg(err.GetCString()));
+		App::get()->logError(QString("LLDBCore: init lldb failed: %1").arg(err.GetCString()));
 		return false;
 	}
-	App::get()->logInfo(QString("LLDBCore: 初始化lldb引擎成功"));
+	App::get()->logInfo(QString("LLDBCore: init lldb success."));
 	return true;
 }
 LLDBCore::~LLDBCore()
@@ -123,5 +105,44 @@ LLDBCore::~LLDBCore()
 	wait();
 	m_process.Destroy();
 	lldb::SBDebugger::Destroy(m_debugger);
+}
+
+bool LLDBCore::launch(
+        QString const& exePath, QString const& workingDir, QString const& stdoutPath,
+        QString const& stderrPath, QString const& stdinPath, QStringList const& argList,
+        QStringList const& envList, uint32_t launchFlags)
+{
+    m_debugger = lldb::SBDebugger::Create(true, &log, nullptr);
+    m_listener = lldb::SBListener("lldb_local");
+    m_target = m_debugger.CreateTarget(exePath.toLocal8Bit());
+//    auto bp = m_target.BreakpointCreateByName("main");
+//    bp.SetEnabled(true);
+    lldb::SBError error;
+    std::vector<const char*> args;
+    for (auto const& s : argList)
+    {
+        args.emplace_back(s.toLocal8Bit());
+    }
+    args.emplace_back(nullptr);
+    std::vector<const char*> envs;
+    for (auto const& s : envList)
+    {
+        envs.emplace_back(s.toLocal8Bit());
+    }
+    envs.emplace_back(nullptr);
+    m_process = m_target.Launch(m_listener, args.data(), envs.data(),
+                                stdinPath.isEmpty()? nullptr : stdinPath.toLocal8Bit(),
+                                stdoutPath.isEmpty()? nullptr : stdoutPath.toLocal8Bit(),
+                                stderrPath.isEmpty()? nullptr : stdoutPath.toLocal8Bit(),
+                                workingDir.toLocal8Bit(),
+                                launchFlags, false, error);
+
+    if (error.Fail())
+    {
+        App::get()->logWarn(QString("LLDBCore: launch executable failed:").arg(error.GetCString()));
+        return false;
+    }
+
+    return true;
 }
 

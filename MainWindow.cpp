@@ -13,15 +13,29 @@
 #include "CallStackView.h"
 #include "OutputView.h"
 #include "MemoryView.h"
+#include "OpenExeDlg.h"
 
 
 MainWindow::MainWindow()
 		: KDDockWidgets::MainWindow("XingDBG")
 {
-	auto fileMenu = menuBar()->addMenu("文件");
-	auto openAct = fileMenu->addAction("打开可执行程序", this, [] {
-		App::get()->launch(R"(E:\msys64\home\xing\a.exe)", "");
-		App::get()->getDbgCore()->start();
+	auto fileMenu = menuBar()->addMenu("File");
+	auto openAct = fileMenu->addAction("Open executable", this, [this]
+    {
+        OpenExeDlg dlg(this);
+        if (dlg.exec() != QDialog::Accepted)
+            return ;
+
+        auto success = core()->launch(dlg.exePath(), dlg.workingDir(), dlg.stdoutPath(),
+                       dlg.stderrPath(), dlg.stdinPath(), dlg.argList(),
+                       dlg.envList(), dlg.launchFlags());
+        if (!success)
+        {
+            QMessageBox::warning(this, tr("Error"), tr("Open executable failed"));
+            return;
+        }
+
+        core()->start();
 	});
 	fileMenu->addAction("附加进程");
 	fileMenu->addAction("远程调试");

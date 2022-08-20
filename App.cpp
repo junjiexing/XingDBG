@@ -14,6 +14,7 @@ App* App::get()
 }
 
 App::App()
+    :lldbCore(std::make_unique<LLDBCore>())
 {
 
 }
@@ -43,8 +44,3 @@ LLDBCore *App::getDbgCore()
 	return lldbCore.get();
 }
 
-bool App::launch(const QString &path, const QString &args)
-{
-	lldbCore = std::move(std::make_unique<LLDBCore>(path, args));
-	return true;
-}

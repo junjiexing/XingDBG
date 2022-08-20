@@ -23,7 +23,6 @@ public:
 
 
 	[[nodiscard]] LLDBCore* getDbgCore();
-	bool launch(QString const& path, QString const& args);
 
 signals:
 	void outputMsg(QString const& msg, QColor const& color);
@@ -40,4 +39,6 @@ private:
 	std::unique_ptr<LLDBCore> lldbCore;
 };
 
+#define app() App::get()
+#define core() App::get()->getDbgCore()
 
