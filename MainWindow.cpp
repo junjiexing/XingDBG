@@ -26,6 +26,8 @@ MainWindow::MainWindow()
         if (dlg.exec() != QDialog::Accepted)
             return ;
 
+		app()->resetCore();
+
         auto success = core()->launch(dlg.exePath(), dlg.workingDir(), dlg.stdoutPath(),
                        dlg.stderrPath(), dlg.stdinPath(), dlg.argList(),
                        dlg.envList(), dlg.launchFlags());

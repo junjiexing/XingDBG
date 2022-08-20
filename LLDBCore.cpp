@@ -139,7 +139,7 @@ bool LLDBCore::launch(
 
     if (error.Fail())
     {
-        App::get()->logWarn(QString("LLDBCore: launch executable failed:").arg(error.GetCString()));
+        App::get()->logWarn(QString("LLDBCore: launch executable failed: %1").arg(error.GetCString()));
         return false;
     }
 

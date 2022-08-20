@@ -4,6 +4,8 @@
 
 #include "App.h"
 
+#include <memory>
+
 #include "LLDBCore.h"
 
 App* App::get()
@@ -14,7 +16,6 @@ App* App::get()
 }
 
 App::App()
-    :lldbCore(std::make_unique<LLDBCore>())
 {
 
 }
@@ -39,8 +40,14 @@ void App::logInfo(const QString& msg)
 	emit outputMsg(msg, Qt::black);
 }
 
+void App::resetCore()
+{
+	lldbCore = std::make_unique<LLDBCore>();
+}
+
 LLDBCore *App::getDbgCore()
 {
 	return lldbCore.get();
 }
+
 

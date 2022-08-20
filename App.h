@@ -21,8 +21,9 @@ public:
 	void logWarn(QString const& msg);
 	void logInfo(QString const& msg);
 
+	void resetCore();
 
-	[[nodiscard]] LLDBCore* getDbgCore();
+	LLDBCore* getDbgCore();
 
 signals:
 	void outputMsg(QString const& msg, QColor const& color);
