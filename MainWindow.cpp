@@ -18,27 +18,31 @@
 
 
 MainWindow::MainWindow()
-		: KDDockWidgets::MainWindow("XingDBG")
+	: KDDockWidgets::MainWindow("XingDBG")
 {
 	auto fileMenu = menuBar()->addMenu("File");
 	auto openAct = fileMenu->addAction("Open executable", this, [this]
-    {
-        OpenExeDlg dlg(this);
-        if (dlg.exec() != QDialog::Accepted)
-            return ;
+	{
+		OpenExeDlg dlg(this);
+		if (dlg.exec() != QDialog::Accepted)
+			return;
 
 		app()->resetCore();
+		if (!core()->platformConnect(dlg.platformName(), dlg.connectUrl()))
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Platform connect failed"));
+			return;
+		}
+		auto success = core()->launch(dlg.exePath(), dlg.workingDir(), dlg.stdoutPath(),
+									  dlg.stderrPath(), dlg.stdinPath(), dlg.argList(),
+									  dlg.envList(), dlg.launchFlags());
+		if (!success)
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Open executable failed"));
+			return;
+		}
 
-        auto success = core()->launch(dlg.exePath(), dlg.workingDir(), dlg.stdoutPath(),
-                       dlg.stderrPath(), dlg.stdinPath(), dlg.argList(),
-                       dlg.envList(), dlg.launchFlags());
-        if (!success)
-        {
-            QMessageBox::warning(this, tr("Error"), tr("Open executable failed"));
-            return;
-        }
-
-        core()->start();
+		core()->start();
 	});
 	auto attachAct = fileMenu->addAction("Attach", this, [this]
 	{
@@ -81,13 +85,13 @@ MainWindow::MainWindow()
 	{
 		KDDockWidgets::LayoutSaver saver;
 		const bool result = saver.saveToFile("main_layout.json");
-		statusBar()->showMessage(result? "保存布局成功": "保存布局失败");
+		statusBar()->showMessage(result ? "保存布局成功" : "保存布局失败");
 	});
 	viewMenu->addAction("加载布局", this, [this]
 	{
 		KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
 		const bool result = saver.restoreFromFile("main_layout.json");
-		statusBar()->showMessage(result? "加载布局成功": "加载布局失败");
+		statusBar()->showMessage(result ? "加载布局成功" : "加载布局失败");
 	});
 
 	auto debugMenu = menuBar()->addMenu(tr("Debug"));
@@ -156,7 +160,6 @@ void MainWindow::setupDockWidgets()
 	widget7->setStyleSheet("background: black;");
 	sourceDock->setWidget(widget7);
 	addDockWidget(sourceDock, KDDockWidgets::Location_None, cpuDock);
-
 
 
 	auto regDock = new KDDockWidgets::DockWidget(tr("Register"));

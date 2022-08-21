@@ -9,6 +9,7 @@
 class QLineEdit;
 class QListWidget;
 class QTableWidget;
+class QComboBox;
 
 class OpenExeDlg : public QDialog
 {
@@ -17,7 +18,10 @@ class OpenExeDlg : public QDialog
 public:
     explicit OpenExeDlg(QWidget* parent);
 
-    QString exePath();
+	QString platformName();
+	QString connectUrl();
+
+	QString exePath();
     QString workingDir();
     QString stdoutPath();
     QString stderrPath();
@@ -29,6 +33,9 @@ public:
     void accept() override;
 
 private:
+	QComboBox* m_platformCombo;
+	QLineEdit* m_connectUrlEdt;
+
     QLineEdit* m_exePathEdt;
     QLineEdit* m_workDirEdt;
     QLineEdit* m_stdoutPathEdt;

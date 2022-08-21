@@ -8,9 +8,9 @@
 #include <lldb/API/LLDB.h>
 #include <vector>
 
-class LLDBCore : public QThread
+class LLDBCore: public QThread
 {
-	Q_OBJECT
+Q_OBJECT
 
 public:
 	explicit LLDBCore();
@@ -20,18 +20,18 @@ public:
 
 	std::vector<std::pair<QString, QString>> platforms();
 
-    bool launch(QString const& exePath, QString const& workingDir, QString const& stdoutPath,
-                QString const& stderrPath, QString const& stdinPath, QStringList const& argList,
-                QStringList const& envList, uint32_t launchFlags);
+	bool launch(QString const &exePath, QString const &workingDir, QString const &stdoutPath,
+				QString const &stderrPath, QString const &stdinPath, QStringList const &argList,
+				QStringList const &envList, uint32_t launchFlags);
 
 	bool attach(uint64_t pid);
 
-	bool platformConnect(QString const& platformName, QString const& url);
+	bool platformConnect(QString const &platformName, QString const &url);
 
-	lldb::SBProcess const&  getProcess() const {return m_process;}
-	lldb::SBProcess&  getProcess() {return m_process;}
-	lldb::SBTarget const& getTarget() const {return m_target;}
-	lldb::SBTarget& getTarget() {return m_target;}
+	lldb::SBProcess const &getProcess() const { return m_process; }
+	lldb::SBProcess &getProcess() { return m_process; }
+	lldb::SBTarget const &getTarget() const { return m_target; }
+	lldb::SBTarget &getTarget() { return m_target; }
 
 
 protected:

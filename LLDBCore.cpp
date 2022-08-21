@@ -132,8 +132,13 @@ bool LLDBCore::launch(
         QString const& stderrPath, QString const& stdinPath, QStringList const& argList,
         QStringList const& envList, uint32_t launchFlags)
 {
-    m_target = m_debugger.CreateTarget(exePath.toLocal8Bit());
-    lldb::SBError error;
+	lldb::SBError error;
+    m_target = m_debugger.CreateTarget(exePath.toLocal8Bit(), nullptr, nullptr, true, error);
+	if (error.Fail())
+	{
+		app()->w(tr("Create target failed: ") + error.GetCString());
+		return false;
+	}
     std::vector<const char*> args;
     for (auto const& s : argList)
         args.emplace_back(s.toLocal8Bit());

@@ -4,12 +4,29 @@
 
 #include "OpenExeDlg.h"
 #include <QtWidgets>
-#include <lldb/lldb-enumerations.h>
+#include "App.h"
+#include "LLDBCore.h"
 
 
 OpenExeDlg::OpenExeDlg(QWidget *parent)
-        : QDialog(parent) {
-    m_exePathEdt = new QLineEdit;
+        : QDialog(parent)
+{
+	m_platformCombo = new QComboBox;
+	auto platforms = core()->platforms();
+	auto descriptionLab = new QLabel;
+	connect(m_platformCombo, &QComboBox::currentIndexChanged, this, [=, this](int index)
+	{
+		auto description = m_platformCombo->itemData(index).toString();
+		descriptionLab->setText(description);
+	});
+	for (auto const& platform : platforms)
+	{
+		m_platformCombo->addItem(platform.first, platform.second);
+	}
+	m_connectUrlEdt = new QLineEdit;
+
+
+	m_exePathEdt = new QLineEdit;
     auto chooseExeBtn = new QPushButton("...");
     m_workDirEdt = new QLineEdit;
     auto chooseWorkDirBtn = new QPushButton("...");
@@ -220,7 +237,11 @@ OpenExeDlg::OpenExeDlg(QWidget *parent)
 
 
     auto flay = new QFormLayout(this);
-    auto hlay = new QHBoxLayout;
+	flay->addRow(tr("Platform:"), m_platformCombo);
+	flay->addRow(tr("Description:"), descriptionLab);
+	flay->addRow(tr("Connect url:"), m_connectUrlEdt);
+
+	auto hlay = new QHBoxLayout;
     hlay->addWidget(m_exePathEdt, 1);
     hlay->addWidget(chooseExeBtn);
     flay->addRow(tr("Executable:"), hlay);
@@ -261,6 +282,16 @@ OpenExeDlg::OpenExeDlg(QWidget *parent)
     flay->addRow(tr("Environments:"), vlay);
     flay->addRow(tr("Launch options:"), launchOptionsBox);
     flay->addRow(btnBox);
+}
+
+QString OpenExeDlg::platformName()
+{
+	return m_platformCombo->currentText();
+}
+
+QString OpenExeDlg::connectUrl()
+{
+	return m_connectUrlEdt->text();
 }
 
 QString OpenExeDlg::exePath()
