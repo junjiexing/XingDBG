@@ -9,24 +9,27 @@
 
 class LLDBCore;
 
-class App : public QObject
+class App: public QObject
 {
 	Q_OBJECT
 
 public:
 	~App() override;
-	static App* get();
+	static App *get();
 
-	void logError(QString const& msg);
-	void logWarn(QString const& msg);
-	void logInfo(QString const& msg);
+	void logError(QString const &msg);
+	void logWarn(QString const &msg);
+	void logInfo(QString const &msg);
+	void i(QString const &msg) { logInfo(msg); }
+	void w(QString const &msg) { logWarn(msg); }
+	void e(QString const &msg) { logError(msg); }
 
 	void resetCore();
 
-	LLDBCore* getDbgCore();
+	LLDBCore *getDbgCore();
 
 signals:
-	void outputMsg(QString const& msg, QColor const& color);
+	void outputMsg(QString const &msg, QColor const &color);
 
 	void debugeeExited(int status);
 	void onStopState();
@@ -40,6 +43,6 @@ private:
 	std::unique_ptr<LLDBCore> lldbCore;
 };
 
-#define app() App::get()
-#define core() App::get()->getDbgCore()
+inline App *app() { return App::get(); }
+inline LLDBCore *core() { return App::get()->getDbgCore(); }
 

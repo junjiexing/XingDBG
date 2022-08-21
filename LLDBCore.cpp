@@ -6,14 +6,14 @@
 #include "App.h"
 #include <vector>
 
-
-LLDBCore::LLDBCore()
-{
-}
-
 static void log(const char *msg, void *)
 {
-	App::get()->logInfo(QString("LLDBCore: log: %1").arg(msg));
+	app()->i(QString("LLDBCore: log: %1").arg(msg));
+}
+
+LLDBCore::LLDBCore()
+	: m_debugger(lldb::SBDebugger::Create(true, &log, nullptr))
+{
 }
 
 void LLDBCore::run()
@@ -98,13 +98,33 @@ bool LLDBCore::init()
 	App::get()->logInfo(QString("LLDBCore: init lldb success."));
 	return true;
 }
+
 LLDBCore::~LLDBCore()
 {
 	m_process.Kill();
 
 	wait();
 	m_process.Destroy();
+
 	lldb::SBDebugger::Destroy(m_debugger);
+}
+
+std::vector<std::pair<QString, QString>> LLDBCore::platforms()
+{
+	std::vector<std::pair<QString, QString>> vec;
+	char buffer[1000];	// shit
+	for (int i = 0; ; ++i)
+	{
+		auto p = m_debugger.GetAvailablePlatformInfoAtIndex(i);
+		if (!p) return vec;
+
+		p.GetValueForKey("name").GetStringValue(buffer, 1000);
+		QString name = buffer;
+		p.GetValueForKey("description").GetStringValue(buffer, 1000);
+		QString description = buffer;
+
+		vec.emplace_back(std::pair<QString, QString>{name, description});
+	}
 }
 
 bool LLDBCore::launch(
@@ -112,24 +132,17 @@ bool LLDBCore::launch(
         QString const& stderrPath, QString const& stdinPath, QStringList const& argList,
         QStringList const& envList, uint32_t launchFlags)
 {
-    m_debugger = lldb::SBDebugger::Create(true, &log, nullptr);
-    m_listener = lldb::SBListener("lldb_local");
     m_target = m_debugger.CreateTarget(exePath.toLocal8Bit());
-//    auto bp = m_target.BreakpointCreateByName("main");
-//    bp.SetEnabled(true);
     lldb::SBError error;
     std::vector<const char*> args;
     for (auto const& s : argList)
-    {
         args.emplace_back(s.toLocal8Bit());
-    }
     args.emplace_back(nullptr);
     std::vector<const char*> envs;
     for (auto const& s : envList)
-    {
         envs.emplace_back(s.toLocal8Bit());
-    }
     envs.emplace_back(nullptr);
+	m_listener = lldb::SBListener("lldb_local");
     m_process = m_target.Launch(m_listener, args.data(), envs.data(),
                                 stdinPath.isEmpty()? nullptr : stdinPath.toLocal8Bit(),
                                 stdoutPath.isEmpty()? nullptr : stdoutPath.toLocal8Bit(),
@@ -146,3 +159,42 @@ bool LLDBCore::launch(
     return true;
 }
 
+bool LLDBCore::attach(uint64_t pid)
+{
+	m_target = m_debugger.CreateTarget(nullptr);
+	lldb::SBError error;
+	m_listener = lldb::SBListener("lldb_local");
+	m_process = m_target.AttachToProcessWithID(m_listener, pid, error);
+	if (error.Fail())
+	{
+		App::get()->logWarn(tr("LLDBCore: attach to pid failed: ") + error.GetCString());
+		return false;
+	}
+
+	return true;
+}
+
+bool LLDBCore::platformConnect(QString const& platformName, QString const& url)
+{
+	lldb::SBPlatform platform(platformName.toLocal8Bit());
+	if (!platform.IsValid())
+	{
+		app()->e(QString("Invalid platform name: ") + platformName);
+		return false;
+	}
+
+	if (!url.isEmpty())
+	{
+		lldb::SBPlatformConnectOptions opt(url.toLocal8Bit());
+		auto err = platform.ConnectRemote(opt);
+		if (err.Fail())
+		{
+			app()->e(tr("Platform connect error: ") + err.GetCString());
+			return false;
+		}
+	}
+
+	m_debugger.SetSelectedPlatform(platform);
+
+	return true;
+}

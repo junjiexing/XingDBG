@@ -6,6 +6,7 @@
 #include <QThread>
 #include <memory>
 #include <lldb/API/LLDB.h>
+#include <vector>
 
 class LLDBCore : public QThread
 {
@@ -17,9 +18,15 @@ public:
 
 	static bool init();
 
+	std::vector<std::pair<QString, QString>> platforms();
+
     bool launch(QString const& exePath, QString const& workingDir, QString const& stdoutPath,
                 QString const& stderrPath, QString const& stdinPath, QStringList const& argList,
                 QStringList const& envList, uint32_t launchFlags);
+
+	bool attach(uint64_t pid);
+
+	bool platformConnect(QString const& platformName, QString const& url);
 
 	lldb::SBProcess const&  getProcess() const {return m_process;}
 	lldb::SBProcess&  getProcess() {return m_process;}

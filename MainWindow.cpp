@@ -14,6 +14,7 @@
 #include "OutputView.h"
 #include "MemoryView.h"
 #include "OpenExeDlg.h"
+#include "AttachDlg.h"
 
 
 MainWindow::MainWindow()
@@ -39,8 +40,23 @@ MainWindow::MainWindow()
 
         core()->start();
 	});
-	fileMenu->addAction("附加进程");
-	fileMenu->addAction("远程调试");
+	auto attachAct = fileMenu->addAction("Attach", this, [this]
+	{
+		AttachDlg dlg(this);
+		if (dlg.exec() != QDialog::Accepted)
+			return;
+
+		app()->resetCore();
+		if (!core()->platformConnect(dlg.platformName(), dlg.connectUrl()))
+		{
+			QMessageBox::warning(this, tr("Error"), tr("Platform connect failed"));
+			return;
+		}
+		core()->attach(dlg.pid());
+		core()->start();
+	});
+
+//	fileMenu->addAction("远程调试");
 	fileMenu->addAction("打开源文件");
 	fileMenu->addSeparator();
 	fileMenu->addAction("配置");
@@ -48,6 +64,7 @@ MainWindow::MainWindow()
 	fileMenu->addAction("退出", this, &MainWindow::close);
 	auto fileToolBar = new QToolBar("文件", this);
 	fileToolBar->addAction(openAct);
+	fileToolBar->addAction(attachAct);
 	addToolBar(fileToolBar);
 
 
