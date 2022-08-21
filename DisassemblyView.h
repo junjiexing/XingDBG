@@ -6,7 +6,6 @@
 #include <QTextEdit>
 #include "LLDBCore.h"
 #include "AbstractTableView.h"
-#include <vector>
 
 
 class DisassemblyView : public AbstractTableView
@@ -23,16 +22,8 @@ protected:
 	void drawLine(QPainter *p, int scrollLine, int currLine) override;
 
 private:
-	struct Instruction
-	{
-		uint64_t address;
-		QString disassembly;
-		QString comment;
-	};
-
-	std::vector<Instruction> m_insts;
-
-	uint64_t m_pcAddress;
+	lldb::SBInstructionList m_insts;
+	lldb::SBAddress m_pcAddress;
 };
 
 

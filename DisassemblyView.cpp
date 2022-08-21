@@ -25,140 +25,105 @@ DisassemblyView::DisassemblyView()
 
 void DisassemblyView::setThreadFrame(lldb::SBThread thread, int index)
 {
-//	clear();
-	auto &target = App::get()->getDbgCore()->getTarget();
-
+	m_insts.Clear();
+	auto &target = core()->getTarget();
 	auto frame = thread.GetFrameAtIndex(index);
-	m_pcAddress = frame.GetPCAddress().GetLoadAddress(target);
-//	auto funcName = frame.GetDisplayFunctionName();
-//	if (funcName) setTitle(QString("反汇编-").append(funcName));
-//	auto sc = frame.GetSymbolContext(lldb::eSymbolContextFunction | lldb::eSymbolContextSymbol);
-//	if (sc.GetFunction())
-//	{
-//
-//	}
-//	else if (sc.GetSymbol())
-//	{
-//		frame.GetLineEntry()
-//	}
-//	else
-//	{
-//		frame.
-//	}
+	m_pcAddress = frame.GetPCAddress();
 
-
-
-
-
-	auto func = frame.GetFunction();
-	lldb::SBInstructionList insts;
+	auto sc = frame.GetSymbolContext(lldb::eSymbolContextFunction | lldb::eSymbolContextSymbol);
+	auto func = sc.GetFunction();
 	if (func.IsValid())
 	{
-//		func.GetStartAddress()
-		insts = func.GetInstructions(target, "intel");
+		m_insts = func.GetInstructions(target, "intel");
 	}
 	else
 	{
-		auto &process = App::get()->getDbgCore()->getProcess();
-		lldb::SBMemoryRegionInfo region_info;
-		auto err = process.GetMemoryRegionInfo(frame.GetPC(), region_info);
-		if (err.Fail())
+		auto sym = sc.GetSymbol();
+		if (sym.IsValid() && (sym.GetType() == lldb::eSymbolTypeAbsolute || sym.GetStartAddress().IsValid()))
 		{
-			// TODO: log
-			return;
+			m_insts = sym.GetInstructions(target, "intel");
 		}
+		else
+		{
+			auto &process = core()->getProcess();
+			lldb::SBMemoryRegionInfo region_info;
+			auto err = process.GetMemoryRegionInfo(frame.GetPC(), region_info);
+			if (err.Fail())
+			{
+				app()->w(tr("Cannot find memory region info: ") + err.GetCString());
+				return;
+			}
 
-		auto base = region_info.GetRegionBase();
-		auto sz = region_info.GetRegionEnd() - base;
-		std::vector<uint8_t> buffer(sz);
+			// TODO: 更好的反汇编方式
+//			auto base = region_info.GetRegionBase();
+			auto base = m_pcAddress.GetLoadAddress(target);
+			auto sz = region_info.GetRegionEnd() - base;
+			std::vector<uint8_t> buffer(sz);
 
-		lldb::SBError error;
-		sz = process.ReadMemory(base, buffer.data(), sz, error);
-		buffer.resize(sz);
+			lldb::SBError error;
+			sz = process.ReadMemory(base, buffer.data(), sz, error);
+			if (error.Fail())
+			{
+				app()->w(tr("Cannot read process memory"));
+				return;
+			}
+			buffer.resize(sz);
 
-		insts = target.GetInstructionsWithFlavor(base, "intel", buffer.data(), buffer.size());
+			m_insts = target.GetInstructionsWithFlavor(base, "intel", buffer.data(), buffer.size());
+		}
 	}
 
-//	auto& process = App::get()->getDbgCore()->getProcess();
-//	auto base = frame.GetSymbol().GetStartAddress().GetLoadAddress(target);
-//	auto sz = frame.GetSymbol().GetEndAddress().GetLoadAddress(target) - base;
-//	std::vector<uint8_t> buffer(sz);
-//
-//	lldb::SBError error;
-//	sz = process.ReadMemory(base, buffer.data(), sz, error);
-//	buffer.resize(sz);
-//
-//	auto insts = target.GetInstructionsWithFlavor(base, "intel", buffer.data(), buffer.size());
-
-
-//	int scrollLine = 0;
-//	for (int i = 0; i < insts.GetSize(); ++i)
-//	{
-//		auto inst = insts.GetInstructionAtIndex(i);
-//		auto addr = inst.GetAddress();
-//		if (addr == frame.GetPCAddress())
-//		{
-//			setTextBackgroundColor(Qt::blue);
-//			scrollLine = i;
-//		}
-//		else setTextBackgroundColor(Qt::white);
-//		append(QString("%1: %2 %3  ;%4\n")
-//							   .arg(addr.GetLoadAddress(target))
-//							   .arg(inst.GetMnemonic(target))
-//							   .arg(inst.GetOperands(target))
-//							   .arg(inst.GetComment(target)));
-//	}
-
-	for (int i = 0; i < insts.GetSize(); ++i)
+	int i = 0;
+	for (; i != m_insts.GetSize(); ++i)
 	{
-		auto inst = insts.GetInstructionAtIndex(i);
-		auto address = inst.GetAddress().GetLoadAddress(target);
-		if (address == m_pcAddress)
+		auto inst = m_insts.GetInstructionAtIndex(i);
+		if (inst.GetAddress() == m_pcAddress)
 		{
-			scrollToLine(i);
+			break;
 		}
-		m_insts.emplace_back(Instruction{
-			address,
-			QString("%1 %2").arg(inst.GetMnemonic(target)).arg(inst.GetOperands(target)),
-			QString(inst.GetComment(target))
-		});
 	}
 
-//	auto cur = extCursor();
-//	cur.setPosition(scrollLine);
-//	setTextCursor(cur);
-
-//	setPlainText(frame.Disassemble());
-
-//	find("-> ");
-
+	updateScrollBar();
 	refresh();
+
+	if (i != m_insts.GetSize())
+	{
+		scrollToLine(i);
+	}
+	else
+	{
+		// TODO: 花指令 or 反汇编错误？
+	}
+
 }
 int DisassemblyView::lineCount()
 {
-	return int(m_insts.size());
+	return int(m_insts.GetSize());
 }
 
 void DisassemblyView::drawLine(QPainter *p, int scrollLine, int currLine)
 {
-	auto const& inst = m_insts.at(currLine);
-	auto cg = isActiveWindow()?QPalette::Active:QPalette::Inactive;
-	auto bkgColor = palette().color(cg, inst.address == m_pcAddress? QPalette::Highlight: QPalette::Base);
-	auto txtColor = palette().color(cg, inst.address == m_pcAddress? QPalette::HighlightedText: QPalette::Text);
+	auto target = core()->getTarget();
+	auto inst = m_insts.GetInstructionAtIndex(currLine);
+	auto cg = isActiveWindow() ? QPalette::Active : QPalette::Inactive;
+	auto bkgColor = palette().color(cg, inst.GetAddress() == m_pcAddress ? QPalette::Highlight : QPalette::Base);
+	auto txtColor = palette().color(cg, inst.GetAddress() == m_pcAddress ? QPalette::HighlightedText : QPalette::Text);
 	p->setPen(QPen(txtColor));
 	QRect rc{0, (currLine - scrollLine) * lineHeight(), viewport()->width(), lineHeight()};
 	p->fillRect(rc, bkgColor);
 	auto addressWidth = headerSectionSize(0);
 	rc.setWidth(addressWidth);
-	p->drawText(rc, 0, QString("%1").arg(inst.address, 16, 16, QLatin1Char('0')));
+	p->drawText(rc,0, QString("%1").arg(
+		inst.GetAddress().GetLoadAddress(target),
+		16, 16, QLatin1Char('0')));
 	auto disasmWidth = headerSectionSize(1);
 	rc.setLeft(rc.left() + rc.width());
 	rc.setWidth(disasmWidth);
-	p->drawText(rc, 0, inst.disassembly);
+	p->drawText(rc, 0, QString(inst.GetMnemonic(target)) + " " + inst.GetOperands(target));
 	auto commentWidth = headerSectionSize(2);
 	rc.setLeft(rc.left() + rc.width());
 	rc.setWidth(commentWidth);
-	p->drawText(rc, 0, inst.comment);
+	p->drawText(rc, 0, inst.GetComment(target));
 }
 void DisassemblyView::init()
 {
