@@ -15,6 +15,7 @@
 #include "MemoryView.h"
 #include "OpenExeDlg.h"
 #include "AttachDlg.h"
+#include "SymbolView.h"
 
 
 MainWindow::MainWindow()
@@ -141,6 +142,7 @@ MainWindow::MainWindow()
 }
 void MainWindow::setupDockWidgets()
 {
+	// TODO:
 	QFont f{"Sarasa Fixed SC", 14};
 	f.setStyleHint(QFont::Monospace);
 
@@ -183,5 +185,9 @@ void MainWindow::setupDockWidgets()
 	memoryView->updateFont(f);
 	memoryDock->setWidget(memoryView);
 	addDockWidget(memoryDock, KDDockWidgets::Location_OnRight, outputDock);
+
+	auto symbolDock = new KDDockWidgets::DockWidget(tr("Symbol"));
+	symbolDock->setWidget(new SymbolView());
+	addDockWidget(symbolDock, KDDockWidgets::Location_OnLeft, regDock);
 
 }

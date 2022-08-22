@@ -3,10 +3,10 @@
 //
 
 #pragma once
-#include <QTextEdit>
+#include <QWidget>
 
 
-class OutputView : public QTextEdit
+class OutputView : public QWidget
 {
 	Q_OBJECT
 
