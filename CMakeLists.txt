@@ -47,5 +47,5 @@ add_executable(${PROJECT_NAME}
         MemoryView.h
         AbstractTableView.cpp
         AbstractTableView.h
-        OpenExeDlg.cpp OpenExeDlg.h AttachDlg.cpp AttachDlg.h)
+        OpenExeDlg.cpp OpenExeDlg.h AttachDlg.cpp AttachDlg.h SymbolView.cpp SymbolView.h Utils.h)
 target_link_libraries(${PROJECT_NAME} ${REQUIRED_LIBS_QUALIFIED} KDAB::kddockwidgets lldb.dll)
