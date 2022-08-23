@@ -7,8 +7,8 @@
 
 namespace Utils
 {
-	QString hex(uint64_t num, int width = 16)
+	inline QString hex(uint64_t num, int width = 16)
 	{
-		return QString("%1").arg(num, width, 16, QChar('0'));
+		return QString("%1").arg(num, width, 16, QChar('0')).toUpper();
 	}
 }

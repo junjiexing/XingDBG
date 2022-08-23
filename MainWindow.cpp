@@ -186,8 +186,8 @@ void MainWindow::setupDockWidgets()
 	memoryDock->setWidget(memoryView);
 	addDockWidget(memoryDock, KDDockWidgets::Location_OnRight, outputDock);
 
-	auto symbolDock = new KDDockWidgets::DockWidget(tr("Symbol"));
-	symbolDock->setWidget(new SymbolView());
-	addDockWidget(symbolDock, KDDockWidgets::Location_OnLeft, regDock);
+//	auto symbolDock = new KDDockWidgets::DockWidget(tr("Symbol"));
+//	symbolDock->setWidget(new SymbolView());
+//	addDockWidget(symbolDock, KDDockWidgets::Location_OnLeft, regDock);
 
 }

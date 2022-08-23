@@ -35,10 +35,14 @@ public:
 	void scrollToLine(int line);
 	int linePos();
 
+	int selectedLine();
+
 protected:
 	virtual void viewportPaintEvent();
 	virtual void viewportResizeEvent();
-	bool viewportEvent(QEvent *event) override;
+	virtual bool viewportEvent(QEvent *event) override;
+
+	void onMouseButtonPress(QMouseEvent* event);
 
 	virtual void drawLine(QPainter* p, int scrollLine, int currLine) = 0;
 
@@ -48,6 +52,7 @@ protected:
 private:
 	QHeaderView* m_header;
 	int m_lineHeight;
+	int m_selectedLine = 0;
 };
 
 

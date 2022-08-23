@@ -4,6 +4,7 @@
 
 #include "AbstractTableView.h"
 #include <QEvent>
+#include <QMouseEvent>
 #include <QScrollBar>
 
 
@@ -91,6 +92,10 @@ bool AbstractTableView::viewportEvent(QEvent *event)
 	{
 		viewportResizeEvent();
 		return true;
+	}
+	if (event->type() == QEvent::MouseButtonPress)
+	{
+		onMouseButtonPress(static_cast<QMouseEvent*>(event));
 	}
 	return QAbstractScrollArea::viewportEvent(event);
 }
@@ -208,5 +213,16 @@ int AbstractTableView::linePos()
 int AbstractTableView::headerSectionSize(int index)
 {
 	return m_header->sectionSize(index);
+}
+
+void AbstractTableView::onMouseButtonPress(QMouseEvent *event)
+{
+	auto y = event->pos().y();
+	m_selectedLine = linePos() + y / lineHeight();
+	refresh();
+}
+int AbstractTableView::selectedLine()
+{
+	return m_selectedLine;
 }
 
