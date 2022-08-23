@@ -3,10 +3,13 @@
 //
 
 #include "App.h"
-
 #include <memory>
-
 #include "LLDBCore.h"
+
+static void log(const char *msg, void *)
+{
+	app()->i(QString("LLDB log: %1").arg(msg));
+}
 
 App* App::get()
 {
@@ -16,13 +19,13 @@ App* App::get()
 }
 
 App::App()
+	: m_debugger(lldb::SBDebugger::Create(true, &log, nullptr))
 {
-
 }
 
 App::~App()
 {
-
+	lldb::SBDebugger::Destroy(m_debugger);
 }
 
 void App::logError(const QString& msg)

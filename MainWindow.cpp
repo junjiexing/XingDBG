@@ -140,6 +140,7 @@ MainWindow::MainWindow()
 
 	statusBar()->showMessage("Done.");
 }
+
 void MainWindow::setupDockWidgets()
 {
 	// TODO:
@@ -190,4 +191,16 @@ void MainWindow::setupDockWidgets()
 //	symbolDock->setWidget(new SymbolView());
 //	addDockWidget(symbolDock, KDDockWidgets::Location_OnLeft, regDock);
 
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+	if (core() && core()->isRunning())
+	{
+		if (QMessageBox::question(this, tr("Debugger is still running"),
+								  tr("Do you want to exit debugger?")) != QMessageBox::Yes)
+			return;
+		app()->resetCore();
+	}
+	KDDockWidgets::MainWindow::closeEvent(event);
 }

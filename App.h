@@ -6,6 +6,8 @@
 #include <QObject>
 #include <QColor>
 #include <memory>
+#include <lldb/API/LLDB.h>
+
 
 class LLDBCore;
 
@@ -26,7 +28,10 @@ public:
 
 	void resetCore();
 
+	lldb::SBDebugger const& getDebugger() const {return m_debugger;}
+	lldb::SBDebugger& getDebugger() {return m_debugger;}
 	LLDBCore *getDbgCore();
+
 
 signals:
 	void outputMsg(QString const &msg, QColor const &color);
@@ -40,9 +45,10 @@ signals:
 private:
 	App();
 
+	lldb::SBDebugger m_debugger;
 	std::unique_ptr<LLDBCore> lldbCore;
 };
 
 inline App *app() { return App::get(); }
-inline LLDBCore *core() { return App::get()->getDbgCore(); }
+inline LLDBCore *core() { return app()->getDbgCore(); }
 

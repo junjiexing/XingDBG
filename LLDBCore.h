@@ -26,10 +26,10 @@ public:
 
 	bool attach(uint64_t pid);
 
+	bool stop();
+
 	bool platformConnect(QString const &platformName, QString const &url);
 
-	lldb::SBDebugger const& getDebugger() const {return m_debugger;}
-	lldb::SBDebugger& getDebugger() {return m_debugger;}
 	lldb::SBProcess const &getProcess() const { return m_process; }
 	lldb::SBProcess &getProcess() { return m_process; }
 	lldb::SBTarget const &getTarget() const { return m_target; }
@@ -42,7 +42,6 @@ protected:
 private:
 	static std::unique_ptr<LLDBCore> instance;
 
-	lldb::SBDebugger m_debugger;
 	lldb::SBListener m_listener;
 	lldb::SBTarget m_target;
 	lldb::SBProcess m_process;

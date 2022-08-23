@@ -6,13 +6,7 @@
 #include "App.h"
 #include <vector>
 
-static void log(const char *msg, void *)
-{
-	app()->i(QString("LLDBCore: log: %1").arg(msg));
-}
-
 LLDBCore::LLDBCore()
-	: m_debugger(lldb::SBDebugger::Create(true, &log, nullptr))
 {
 }
 
@@ -22,36 +16,26 @@ void LLDBCore::run()
 	{
 		if (!m_listener.WaitForEvent(std::numeric_limits<uint32_t>::max(), m_event))
 		{
-			//TODO: log
-			return;
+			app()->w(tr("WaitForEvent failed, debug will stop."));
+			break;
 		}
-
-//		std::cout << "event: " << m_event.GetType() << std::endl;
 
 		if((m_event.GetType() & lldb::SBProcess::eBroadcastBitStateChanged) > 0)
 		{
 			auto state = lldb::SBProcess::GetStateFromEvent(m_event);
-//			std::cout << "state: " << state <<std::endl;
-
 			if(state == lldb::StateType::eStateExited || state == lldb::StateType::eStateCrashed)
 			{
 				auto exit_status = state == lldb::StateType::eStateCrashed ? -1 : m_process.GetExitStatus();
-				App::get()->logInfo(QString("LLDBCore: 被调试进程已退出，代码：%1").arg(exit_status));
-//				std::cout << "exit status: " << exit_status << std::endl;
-				return;
+				app()->i(QString("LLDBCore: 被调试进程已退出，代码：%1").arg(exit_status));
+				emit app()->debugeeExited(exit_status);
+				break;
 			}
 			if (state == lldb::StateType::eStateStopped)	//断点或异常
 			{
-				emit App::get()->onStopState();
+				emit app()->onStopState();
 
 				auto thread = m_process.GetSelectedThread();
-//				std::cout << "selected thread:" << thread.GetThreadID() << std::endl;
-//				std::cout << "num frames: " << thread.GetNumFrames() << std::endl;
-				//process.Continue();
-				App::get()->logInfo(QString("LLDBCore: 目标中断，线程id：%1").arg(thread.GetThreadID()));
-//				process.Continue();
-//				thread.StepOver();
-
+				app()->i(tr("LLDBCore: 目标中断，线程id：%1").arg(thread.GetThreadID()));
 				continue;
 			}
 		}
@@ -60,31 +44,28 @@ void LLDBCore::run()
 		{
 			char buffer[100];
 			size_t n;
-			std::string str = "stdout: ";
+			QString str = "stdout: ";
 			while((n = m_process.GetSTDOUT(buffer, 100)) != 0)
-				str += std::string(buffer, n);
-
-//			std::cout << str << std::endl;
+				str += QString::fromLocal8Bit(buffer, qsizetype(n));
+			app()->i(str);
 		}
 		if((m_event.GetType() & lldb::SBProcess::eBroadcastBitSTDERR) > 0)
 		{
 			char buffer[100];
 			size_t n;
-			std::string str = "stderr: ";
+			QString str = "stderr: ";
 			while((n = m_process.GetSTDERR(buffer, 100)) != 0)
-				str += std::string(buffer, n);
-
-//			std::cout << str << std::endl;
+				str += QString::fromLocal8Bit(buffer, qsizetype(n));
+			app()->i(str);
 		}
 		if((m_event.GetType() & lldb::SBProcess::eBroadcastBitInterrupt) > 0)
 		{
-			auto state = lldb::SBProcess::GetStateFromEvent(m_event);
-//			std::cout << "eBroadcastBitInterrupt:" << state << std::endl;
+//			auto state = lldb::SBProcess::GetStateFromEvent(m_event);
+			app()->w(tr("process interrupt //TODO"));
 		}
 	}
 
-//	App::get()->logInfo(QString("LLDB: run '%1', args: '%2'").arg(m_path).arg(m_args));
-//	emit debugeeExited(-1);
+	app()->i(tr("Debug finished"));
 }
 
 bool LLDBCore::init()
@@ -101,12 +82,17 @@ bool LLDBCore::init()
 
 LLDBCore::~LLDBCore()
 {
-	m_process.Kill();
-
+	if (m_process.IsValid())
+	{
+		auto err = m_process.Kill();
+		if (err.Fail())
+		{
+			app()->w(tr("kill process failed:") + err.GetCString());
+			terminate();
+		}
+	}
 	wait();
-	m_process.Destroy();
-
-	lldb::SBDebugger::Destroy(m_debugger);
+	app()->getDebugger().DeleteTarget(m_target);
 }
 
 std::vector<std::pair<QString, QString>> LLDBCore::platforms()
@@ -115,7 +101,7 @@ std::vector<std::pair<QString, QString>> LLDBCore::platforms()
 	char buffer[1000];	// shit
 	for (int i = 0; ; ++i)
 	{
-		auto p = m_debugger.GetAvailablePlatformInfoAtIndex(i);
+		auto p = app()->getDebugger().GetAvailablePlatformInfoAtIndex(i);
 		if (!p) return vec;
 
 		p.GetValueForKey("name").GetStringValue(buffer, 1000);
@@ -133,7 +119,7 @@ bool LLDBCore::launch(
         QStringList const& envList, uint32_t launchFlags)
 {
 	lldb::SBError error;
-    m_target = m_debugger.CreateTarget(exePath.toLocal8Bit(), nullptr, nullptr, true, error);
+    m_target = app()->getDebugger().CreateTarget(exePath.toLocal8Bit(), nullptr, nullptr, true, error);
 	if (error.Fail())
 	{
 		app()->w(tr("Create target failed: ") + error.GetCString());
@@ -166,7 +152,7 @@ bool LLDBCore::launch(
 
 bool LLDBCore::attach(uint64_t pid)
 {
-	m_target = m_debugger.CreateTarget(nullptr);
+	m_target = app()->getDebugger().CreateTarget(nullptr);
 	lldb::SBError error;
 	m_listener = lldb::SBListener("lldb_local");
 	m_process = m_target.AttachToProcessWithID(m_listener, pid, error);
@@ -199,7 +185,8 @@ bool LLDBCore::platformConnect(QString const& platformName, QString const& url)
 		}
 	}
 
-	m_debugger.SetSelectedPlatform(platform);
+	app()->getDebugger().SetSelectedPlatform(platform);
 
 	return true;
 }
+

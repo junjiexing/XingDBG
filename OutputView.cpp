@@ -28,7 +28,7 @@ OutputView::OutputView()
 	{
 		auto cmd = cmdEdt->text();
 		cmdEdt->clear();
-		auto& dbg = core()->getDebugger();
+		auto& dbg = app()->getDebugger();
 		auto cmdIntp = dbg.GetCommandInterpreter();
 		lldb::SBCommandReturnObject ret;
 		auto status = cmdIntp.HandleCommand(cmd.toLocal8Bit(), ret, false);

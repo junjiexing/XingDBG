@@ -19,7 +19,8 @@ public:
 
 private:
 	void setupDockWidgets();
-
+protected:
+	void closeEvent(QCloseEvent *event) override;
 
 };
 
