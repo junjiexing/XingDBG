@@ -32,37 +32,38 @@ OutputView::OutputView()
 		auto cmdIntp = dbg.GetCommandInterpreter();
 		lldb::SBCommandReturnObject ret;
 		auto status = cmdIntp.HandleCommand(cmd.toLocal8Bit(), ret, false);
-		// TODO: NoResult的返回结果也有可能有output
-		if (status == lldb::eReturnStatusInvalid)
+		switch (status)
 		{
-			app()->w(tr("Invalid command:") + ret.GetError());
-			return;
-		}
-		if (status == lldb::eReturnStatusFailed)
-		{
-			app()->w(tr("Run command failed:") + ret.GetError());
-			return;
-		}
-		if (status == lldb::eReturnStatusSuccessContinuingNoResult)
-		{
+		case lldb::eReturnStatusInvalid:
+			app()->w(tr("Invalid command"));
+			break;
+		case lldb::eReturnStatusFailed:
+			app()->w(tr("Command failed"));
+			break;
+		case lldb::eReturnStatusSuccessContinuingNoResult:
 			app()->i(tr("Command is running"));
-			return;
+			break;
+		case lldb::eReturnStatusSuccessFinishNoResult:
+			app()->i(tr("Command success"));
+			break;
+		case lldb::eReturnStatusSuccessContinuingResult:
+			app()->i(tr("Command is running"));
+			break;
+		case lldb::eReturnStatusSuccessFinishResult:
+			app()->i(tr("Command success"));
+			break;
+		case lldb::eReturnStatusStarted:
+			app()->i(tr("Command started"));
+			break;
+		case lldb::eReturnStatusQuit:
+			app()->i(tr("Command quit"));
+			break;
 		}
-		if (status == lldb::eReturnStatusSuccessFinishNoResult)
-		{
-			app()->i(tr("Command success:") + ret.GetOutput());
-			return;
-		}
-		if (status == lldb::eReturnStatusSuccessContinuingResult)
-		{
-			app()->i(tr("Command is running:") + ret.GetOutput());
-			return;
-		}
-		if (status == lldb::eReturnStatusSuccessFinishResult)
-		{
-			app()->i(tr("Command success:") + ret.GetOutput());
-			return;
-		}
+
+		if (ret.GetOutputSize() != 0)
+			app()->i(ret.GetOutput());
+		if (ret.GetErrorSize() != 0)
+			app()->w(ret.GetError());
 	});
 
 	auto vlay = new QVBoxLayout(this);
