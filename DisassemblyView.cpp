@@ -16,12 +16,12 @@ DisassemblyView::DisassemblyView()
 
 	connect(app(), &App::onStopState, this, [this]
 	{
-		auto process = App::get()->getDbgCore()->getProcess();
+		auto process = core()->getProcess();
 		setThreadFrame(process.GetSelectedThread(), 0);
 	});
 	connect(app(), &App::onThreadFrameChanged, this, [this](uint64_t tid, int index)
 	{
-		auto process = App::get()->getDbgCore()->getProcess();
+		auto process = core()->getProcess();
 		setThreadFrame(process.GetThreadByID(tid), index);
 	});
 }

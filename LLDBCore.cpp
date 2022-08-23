@@ -73,10 +73,10 @@ bool LLDBCore::init()
 	auto err = lldb::SBDebugger::InitializeWithErrorHandling();
 	if (err.Fail())
 	{
-		App::get()->logError(QString("LLDBCore: init lldb failed: %1").arg(err.GetCString()));
+		app()->e(QString("LLDBCore: init lldb failed: %1").arg(err.GetCString()));
 		return false;
 	}
-	App::get()->logInfo(QString("LLDBCore: init lldb success."));
+	app()->i(QString("LLDBCore: init lldb success."));
 	return true;
 }
 
@@ -143,7 +143,7 @@ bool LLDBCore::launch(
 
     if (error.Fail())
     {
-        App::get()->logWarn(QString("LLDBCore: launch executable failed: %1").arg(error.GetCString()));
+        app()->w(QString("LLDBCore: launch executable failed: ") + error.GetCString());
         return false;
     }
 
@@ -158,7 +158,7 @@ bool LLDBCore::attach(uint64_t pid)
 	m_process = m_target.AttachToProcessWithID(m_listener, pid, error);
 	if (error.Fail())
 	{
-		App::get()->logWarn(tr("LLDBCore: attach to pid failed: ") + error.GetCString());
+		app()->w(tr("LLDBCore: attach to pid failed: ") + error.GetCString());
 		return false;
 	}
 

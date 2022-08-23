@@ -18,7 +18,7 @@ OutputView::OutputView()
 	auto lldbLab = new QLabel("LLDB");
 	auto cmdEdt = new QLineEdit;
 
-	connect(App::get(), &App::outputMsg, this, [=](QString const& msg, QColor const& color)
+	connect(app(), &App::outputMsg, this, [=](QString const& msg, QColor const& color)
 	{
 		outEdt->setTextColor(color);
 		outEdt->append(msg);

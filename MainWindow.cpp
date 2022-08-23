@@ -98,7 +98,7 @@ MainWindow::MainWindow()
 	auto debugMenu = menuBar()->addMenu(tr("Debug"));
 	auto runAct = debugMenu->addAction(tr("Run"), this, []
 	{
-		App::get()->getDbgCore()->getProcess().Continue();
+		core()->getProcess().Continue();
 	});
 	debugMenu->addAction(tr("Pause"));
 	debugMenu->addAction(tr("Restart"));
@@ -106,19 +106,19 @@ MainWindow::MainWindow()
 	debugMenu->addSeparator();
 	auto stepOverAct = debugMenu->addAction(tr("Step over"), this, []
 	{
-//		App::get()->getDbgCore()->getProcess().GetSelectedThread().StepOver();
+//		core()->getProcess().GetSelectedThread().StepOver();
 		lldb::SBError err;
-		App::get()->getDbgCore()->getProcess().GetSelectedThread().StepInstruction(true, err);
+		core()->getProcess().GetSelectedThread().StepInstruction(true, err);
 		if (err.Fail())
-			App::get()->logError(QString("Step over instruction failed: ").append(err.GetCString()));
+			app()->e(QString("Step over instruction failed: ").append(err.GetCString()));
 	});
 	auto stepIntoAct = debugMenu->addAction(tr("Step into"), this, []
 	{
-//		App::get()->getDbgCore()->getProcess().GetSelectedThread().StepInto();
+//		core()->getProcess().GetSelectedThread().StepInto();
 		lldb::SBError err;
-		App::get()->getDbgCore()->getProcess().GetSelectedThread().StepInstruction(false, err);
+		core()->getProcess().GetSelectedThread().StepInstruction(false, err);
 		if (err.Fail())
-			App::get()->logError(QString("Step into instruction failed: ").append(err.GetCString()));
+			app()->e(QString("Step into instruction failed: ") + err.GetCString());
 	});
 	auto debugToolBar = new QToolBar("Debug", this);
 	debugToolBar->addAction(runAct);

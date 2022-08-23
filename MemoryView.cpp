@@ -13,15 +13,15 @@ MemoryView::MemoryView()
 	setFrameStyle(QFrame::NoFrame);
 	//TODO: refresh on debug event
 
-	connect(App::get(), &App::gotoMemory, this, [this](uint64_t address)
+	connect(app(), &App::gotoMemory, this, [this](uint64_t address)
 	{
-		auto process = App::get()->getDbgCore()->getProcess();
+		auto process = core()->getProcess();
 		lldb::SBMemoryRegionInfo info;
 		auto err = process.GetMemoryRegionInfo(address, info);
 		auto addressByteSize = int(process.GetAddressByteSize());
 		if (err.Fail())
 		{
-			App::get()->logWarn(QString("Get memory region info for address 0x%1 failed: %2")
+			app()->w(QString("Get memory region info for address 0x%1 failed: %2")
 									.arg(address, addressByteSize * 2, 16, QChar('0'))
 									.arg(err.GetCString()));
 			return;
@@ -30,7 +30,7 @@ MemoryView::MemoryView()
 		setAddressByteSize(addressByteSize);
 		setReadCallBack([](uint64_t base, uint64_t size)
 		{
-			auto process = App::get()->getDbgCore()->getProcess();
+			auto process = core()->getProcess();
 			QByteArray ba{qsizetype(size), Qt::Uninitialized};
 			lldb::SBError err;
 			auto readSize = process.ReadMemory(base, ba.data(), size, err);

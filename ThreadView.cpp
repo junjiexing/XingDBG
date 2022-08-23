@@ -15,7 +15,7 @@ ThreadView::ThreadView()
 
 	setHorizontalHeaderLabels(QStringList() << "id" << "pc" << "注释");
 	setSelectionBehavior(QAbstractItemView::SelectRows);
-	connect(App::get(), &App::onStopState, this, &ThreadView::refresh);
+	connect(app(), &App::onStopState, this, &ThreadView::refresh);
 
 	connect(this, &QTableWidget::doubleClicked, this, [this](const QModelIndex &index)
 	{
@@ -25,7 +25,7 @@ ThreadView::ThreadView()
 		bool ok = false;
 		auto tid = it->text().toULongLong(&ok);
 		if (!ok) return;	// TODO: log
-		emit App::get()->onThreadFrameChanged(tid, 0);
+		emit app()->onThreadFrameChanged(tid, 0);
 	});
 }
 
@@ -38,7 +38,7 @@ static QTableWidgetItem* newItem(QString const& s)
 
 void ThreadView::refresh()
 {
-	auto &process = App::get()->getDbgCore()->getProcess();
+	auto &process = core()->getProcess();
 	auto num = process.GetNumThreads();
 	setRowCount(int(num));
 	for (int i = 0; i < num; ++i)

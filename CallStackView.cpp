@@ -10,21 +10,21 @@ CallStackView::CallStackView()
 {
 	setFrameStyle(QFrame::NoFrame);
 
-	connect(App::get(), &App::onStopState, this, [this]
+	connect(app(), &App::onStopState, this, [this]
 	{
-		auto process = App::get()->getDbgCore()->getProcess();
+		auto process = core()->getProcess();
 		setThread(process.GetSelectedThread());
 	});
-	connect(App::get(), &App::onThreadFrameChanged, this, [this](uint64_t tid, int)
+	connect(app(), &App::onThreadFrameChanged, this, [this](uint64_t tid, int)
 	{
 		if (sender() == this) return;
 
-		auto process = App::get()->getDbgCore()->getProcess();
+		auto process = core()->getProcess();
 		setThread(process.GetThreadByID(tid));
 	});
 	connect(this, &QListWidget::doubleClicked, this, [this](const QModelIndex &index)
 	{
-		emit App::get()->onThreadFrameChanged(m_tid, index.row());
+		emit app()->onThreadFrameChanged(m_tid, index.row());
 	});
 }
 

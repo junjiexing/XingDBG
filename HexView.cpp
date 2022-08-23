@@ -11,50 +11,6 @@
 #include <QDebug>
 
 
-class Model: public QAbstractItemModel
-{
-public:
-	QModelIndex index(int row, int column, const QModelIndex &parent) const override
-	{
-		return {};
-	}
-	QModelIndex parent(const QModelIndex &child) const override
-	{
-		return {};
-	}
-	int rowCount(const QModelIndex &parent) const override
-	{
-		return 0;
-	}
-	int columnCount(const QModelIndex &parent) const override
-	{
-		return 3;
-	}
-	QVariant data(const QModelIndex &index, int role) const override
-	{
-		return {};
-	}
-	QVariant headerData(int section, Qt::Orientation orientation, int role) const override
-	{
-		if (role != Qt::DisplayRole)
-			return {};
-
-		if (orientation == Qt::Horizontal)
-		{
-			switch (section)
-			{
-			case 0:
-				return tr("address");
-			case 1:
-				return tr("hex");
-			case 2:
-				return tr("data");
-			}
-		}
-		return {};
-	}
-};
-
 HexView::HexView(QWidget *parent)
 	: AbstractTableView(parent)
 {

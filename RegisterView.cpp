@@ -18,14 +18,14 @@ RegisterView::RegisterView()
 	setHeaderHidden(true);
 	setFrameStyle(QFrame::NoFrame);
 
-	connect(App::get(), &App::onStopState, this, [this]
+	connect(app(), &App::onStopState, this, [this]
 	{
-		auto const &process = App::get()->getDbgCore()->getProcess();
+		auto const &process = core()->getProcess();
 		setThreadFrame(process.GetSelectedThread(), 0);
 	});
-	connect(App::get(), &App::onThreadFrameChanged, this, [this](uint64_t tid, int index)
+	connect(app(), &App::onThreadFrameChanged, this, [this](uint64_t tid, int index)
 	{
-		auto process = App::get()->getDbgCore()->getProcess();
+		auto process = core()->getProcess();
 		setThreadFrame(process.GetThreadByID(tid), index);
 	});
 }
@@ -34,7 +34,7 @@ void RegisterView::setThreadFrame(lldb::SBThread thread, int index)
 {
 	// TODO: process.GetAddressByteSize()
 	clear();
-	auto const &target = App::get()->getDbgCore()->getTarget();
+	auto const &target = core()->getTarget();
 
 	auto frame = thread.GetFrameAtIndex(index);
 
@@ -91,7 +91,7 @@ void RegisterView::contextMenuEvent(QContextMenuEvent * event)
 	});
 
 	{
-		auto process = App::get()->getDbgCore()->getProcess();
+		auto process = core()->getProcess();
 		lldb::SBMemoryRegionInfo info;
 		auto err = process.GetMemoryRegionInfo(value, info);
 
@@ -99,7 +99,7 @@ void RegisterView::contextMenuEvent(QContextMenuEvent * event)
 		{
 			menu.addAction("View in memory dump", this, [value]
 			{
-				emit App::get()->gotoMemory(value);
+				emit app()->gotoMemory(value);
 			});
 		}
 	}
