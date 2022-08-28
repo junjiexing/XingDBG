@@ -11,7 +11,9 @@ set(REQUIRED_LIBS Core Gui Widgets)
 set(REQUIRED_LIBS_QUALIFIED Qt6::Core Qt6::Gui Qt6::Widgets)
 find_package(Qt${QT_VERSION} COMPONENTS ${REQUIRED_LIBS} REQUIRED)
 
-# TODO: find_package lldb
+find_package(LLVM REQUIRED CONFIG)
+include_directories(${LLVM_INCLUDE_DIRS})
+link_directories(${LLVM_LIBRARY_DIRS})
 
 set(KDDockWidgets_QT6 ON)
 set(build_for_qt6 ON)
@@ -48,4 +50,5 @@ add_executable(${PROJECT_NAME}
         AbstractTableView.cpp
         AbstractTableView.h
         OpenExeDlg.cpp OpenExeDlg.h AttachDlg.cpp AttachDlg.h SymbolView.cpp SymbolView.h Utils.h)
-target_link_libraries(${PROJECT_NAME} ${REQUIRED_LIBS_QUALIFIED} KDAB::kddockwidgets lldb.dll)
+
+target_link_libraries(${PROJECT_NAME} ${REQUIRED_LIBS_QUALIFIED} KDAB::kddockwidgets lldb)
