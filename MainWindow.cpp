@@ -96,7 +96,7 @@ MainWindow::MainWindow()
 	});
 
 	auto debugMenu = menuBar()->addMenu(tr("Debug"));
-	auto runAct = debugMenu->addAction(tr("Run"), this, []
+	auto runAct = debugMenu->addAction(tr("Run"), QKeySequence(Qt::Key_F9), this, []
 	{
 		core()->getProcess().Continue();
 	});
@@ -104,7 +104,7 @@ MainWindow::MainWindow()
 	debugMenu->addAction(tr("Restart"));
 	debugMenu->addAction(tr("Stop"));
 	debugMenu->addSeparator();
-	auto stepOverAct = debugMenu->addAction(tr("Step over"), this, []
+	auto stepOverAct = debugMenu->addAction(tr("Step over"), QKeySequence(Qt::Key_F7), this, []
 	{
 //		core()->getProcess().GetSelectedThread().StepOver();
 		lldb::SBError err;
@@ -112,7 +112,7 @@ MainWindow::MainWindow()
 		if (err.Fail())
 			app()->e(QString("Step over instruction failed: ").append(err.GetCString()));
 	});
-	auto stepIntoAct = debugMenu->addAction(tr("Step into"), this, []
+	auto stepIntoAct = debugMenu->addAction(tr("Step into"), QKeySequence(Qt::Key_F7), this, []
 	{
 //		core()->getProcess().GetSelectedThread().StepInto();
 		lldb::SBError err;
@@ -187,9 +187,9 @@ void MainWindow::setupDockWidgets()
 	memoryDock->setWidget(memoryView);
 	addDockWidget(memoryDock, KDDockWidgets::Location_OnRight, outputDock);
 
-//	auto symbolDock = new KDDockWidgets::DockWidget(tr("Symbol"));
-//	symbolDock->setWidget(new SymbolView());
-//	addDockWidget(symbolDock, KDDockWidgets::Location_OnLeft, regDock);
+	auto symbolDock = new KDDockWidgets::DockWidget(tr("Symbol"));
+	symbolDock->setWidget(new SymbolView());
+	addDockWidget(symbolDock, KDDockWidgets::Location_OnLeft, regDock);
 
 }
 
