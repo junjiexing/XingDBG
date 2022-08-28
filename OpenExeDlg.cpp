@@ -11,20 +11,7 @@
 OpenExeDlg::OpenExeDlg(QWidget *parent)
         : QDialog(parent)
 {
-	m_platformCombo = new QComboBox;
-	auto platforms = core()->platforms();
-	auto descriptionLab = new QLabel;
-	connect(m_platformCombo, &QComboBox::currentIndexChanged, this, [=, this](int index)
-	{
-		auto description = m_platformCombo->itemData(index).toString();
-		descriptionLab->setText(description);
-	});
-	for (auto const& platform : platforms)
-	{
-		m_platformCombo->addItem(platform.first, platform.second);
-	}
-	m_connectUrlEdt = new QLineEdit;
-
+    setWindowTitle(tr("Launch executable"));
 
 	m_exePathEdt = new QLineEdit;
     auto chooseExeBtn = new QPushButton("...");
@@ -237,10 +224,6 @@ OpenExeDlg::OpenExeDlg(QWidget *parent)
 
 
     auto flay = new QFormLayout(this);
-	flay->addRow(tr("Platform:"), m_platformCombo);
-	flay->addRow(tr("Description:"), descriptionLab);
-	flay->addRow(tr("Connect url:"), m_connectUrlEdt);
-
 	auto hlay = new QHBoxLayout;
     hlay->addWidget(m_exePathEdt, 1);
     hlay->addWidget(chooseExeBtn);
@@ -282,16 +265,6 @@ OpenExeDlg::OpenExeDlg(QWidget *parent)
     flay->addRow(tr("Environments:"), vlay);
     flay->addRow(tr("Launch options:"), launchOptionsBox);
     flay->addRow(btnBox);
-}
-
-QString OpenExeDlg::platformName()
-{
-	return m_platformCombo->currentText();
-}
-
-QString OpenExeDlg::connectUrl()
-{
-	return m_connectUrlEdt->text();
 }
 
 QString OpenExeDlg::exePath()

@@ -28,8 +28,6 @@ public:
 
 	bool stop();
 
-	bool platformConnect(QString const &platformName, QString const &url);
-
 	lldb::SBProcess const &getProcess() const { return m_process; }
 	lldb::SBProcess &getProcess() { return m_process; }
 	lldb::SBTarget const &getTarget() const { return m_target; }

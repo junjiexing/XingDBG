@@ -11,4 +11,15 @@ namespace Utils
 	{
 		return QString("%1").arg(num, width, 16, QChar('0')).toUpper();
 	}
+
+    template<typename T>
+    struct GetSp : public T
+    {
+        explicit GetSp(const T& rhs)
+            : T(rhs)
+        {
+        }
+
+        auto sp() const {return T::GetSP();}
+    };
 }

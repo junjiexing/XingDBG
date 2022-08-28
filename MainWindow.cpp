@@ -16,12 +16,18 @@
 #include "OpenExeDlg.h"
 #include "AttachDlg.h"
 #include "SymbolView.h"
+#include "SelectPlatformDlg.h"
 
 
 MainWindow::MainWindow()
 	: KDDockWidgets::MainWindow("XingDBG")
 {
 	auto fileMenu = menuBar()->addMenu("File");
+    fileMenu->addAction(tr("Change platform"), this, [this]
+    {
+        SelectPlatformDlg dlg(this);
+        dlg.exec();
+    });
 	auto openAct = fileMenu->addAction("Open executable", this, [this]
 	{
 		OpenExeDlg dlg(this);
@@ -29,11 +35,6 @@ MainWindow::MainWindow()
 			return;
 
 		app()->resetCore();
-		if (!core()->platformConnect(dlg.platformName(), dlg.connectUrl()))
-		{
-			QMessageBox::warning(this, tr("Error"), tr("Platform connect failed"));
-			return;
-		}
 		auto success = core()->launch(dlg.exePath(), dlg.workingDir(), dlg.stdoutPath(),
 									  dlg.stderrPath(), dlg.stdinPath(), dlg.argList(),
 									  dlg.envList(), dlg.launchFlags());
@@ -52,11 +53,6 @@ MainWindow::MainWindow()
 			return;
 
 		app()->resetCore();
-		if (!core()->platformConnect(dlg.platformName(), dlg.connectUrl()))
-		{
-			QMessageBox::warning(this, tr("Error"), tr("Platform connect failed"));
-			return;
-		}
 		core()->attach(dlg.pid());
 		core()->start();
 	});

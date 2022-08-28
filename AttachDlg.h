@@ -17,15 +17,11 @@ public:
 	explicit AttachDlg(QWidget* parent);
 
 	uint64_t pid();
-	QString platformName();
-	QString connectUrl();
 
 	void accept() override;
 
 private:
 	QLineEdit* m_pidEdt;
-	QComboBox* m_platformCombo;
-	QLineEdit* m_connectUrlEdt;
 };
 
 

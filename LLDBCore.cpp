@@ -165,28 +165,3 @@ bool LLDBCore::attach(uint64_t pid)
 	return true;
 }
 
-bool LLDBCore::platformConnect(QString const& platformName, QString const& url)
-{
-	lldb::SBPlatform platform(platformName.toLocal8Bit());
-	if (!platform.IsValid())
-	{
-		app()->e(QString("Invalid platform name: ") + platformName);
-		return false;
-	}
-
-	if (!url.isEmpty())
-	{
-		lldb::SBPlatformConnectOptions opt(url.toLocal8Bit());
-		auto err = platform.ConnectRemote(opt);
-		if (err.Fail())
-		{
-			app()->e(tr("Platform connect error: ") + err.GetCString());
-			return false;
-		}
-	}
-
-	app()->getDebugger().SetSelectedPlatform(platform);
-
-	return true;
-}
-
