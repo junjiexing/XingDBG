@@ -123,9 +123,13 @@ MainWindow::MainWindow()
 	addToolBar(debugToolBar);
 
 
-	auto helpMenu = menuBar()->addMenu("帮助");
-	auto aboutAct = helpMenu->addAction("关于");
-	auto helpToolBar = new QToolBar("帮助", this);
+	auto helpMenu = menuBar()->addMenu(tr("Help"));
+	auto aboutQtAct = helpMenu->addAction(tr("About Qt"), this, [this]
+	{
+		QMessageBox::aboutQt(this);
+	});
+	auto aboutAct = helpMenu->addAction(tr("About"));
+	auto helpToolBar = new QToolBar(tr("Help"), this);
 	helpToolBar->addAction(aboutAct);
 	addToolBar(helpToolBar);
 
