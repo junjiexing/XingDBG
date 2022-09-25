@@ -48,11 +48,11 @@ protected:
 
 	void updateScrollBar();
 
+	int m_selectedLine = 0;
 
 private:
 	QHeaderView* m_header;
 	int m_lineHeight;
-	int m_selectedLine = 0;
 };
 
 

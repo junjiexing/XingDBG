@@ -24,6 +24,39 @@ DisassemblyView::DisassemblyView()
 		auto process = core()->getProcess();
 		setThreadFrame(process.GetThreadByID(tid), index);
 	});
+
+	auto bpAct = new QAction;
+	bpAct->setShortcut(Qt::Key_F2);
+	bpAct->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+	connect(bpAct, &QAction::triggered, this, [this]
+		{
+			auto ins = m_insts.GetInstructionAtIndex(selectedLine());
+			if (!ins.IsValid())
+			{
+				app()->w(tr("set breakpoint failed"));
+				return;
+			}
+
+			auto& target = core()->getTarget();
+			auto oldBp = findBreakpointByAddress(ins.GetAddress().GetLoadAddress(target));
+			if (oldBp)
+			{
+				target.BreakpointDelete(oldBp.GetID());
+				app()->i("delete breakpoint");
+				return;
+			}
+
+			auto addr = ins.GetAddress();
+			auto br = target.BreakpointCreateBySBAddress(addr);// 这个参数为啥不是const引用？奇怪.
+			if (!br.IsValid())
+			{
+				app()->w(tr("set breakpoint failed"));
+				return;
+			}
+
+			app()->i(tr("set breakpoint successful"));
+		});
+	addAction(bpAct);
 }
 
 void DisassemblyView::setThreadFrame(lldb::SBThread thread, int index)
@@ -52,9 +85,13 @@ void DisassemblyView::drawLine(QPainter *p, int scrollLine, int currLine)
 	auto cg = isActiveWindow() ? QPalette::Active : QPalette::Inactive;
 	auto bkgColorRol = QPalette::Base;
 	auto txtColorRol = QPalette::Text;
-	if (currLine == selectedLine())
+	if (inst.GetAddress() == m_pcAddress)
 		bkgColorRol = QPalette::AlternateBase;
-	else if (inst.GetAddress() == m_pcAddress)
+	else if (findBreakpointByAddress(inst.GetAddress().GetLoadAddress(target)))	//TODO: performance???
+	{
+		bkgColorRol = QPalette::Dark;	// TODO:改成QColor.
+	}
+	else if (currLine == selectedLine())
 	{
 		bkgColorRol = QPalette::Highlight;
 		txtColorRol = QPalette::HighlightedText;
@@ -162,6 +199,23 @@ bool DisassemblyView::disasmAddress(uint64_t address, lldb::SBTarget &target)
 	return true;
 }
 
+lldb::SBBreakpoint DisassemblyView::findBreakpointByAddress(lldb::addr_t addr)
+{
+	auto& target = core()->getTarget();
+
+	for (int i = 0; i < target.GetNumBreakpoints(); ++i)
+	{
+		auto bp = target.GetBreakpointAtIndex(i);
+		auto loc = bp.FindLocationByAddress(addr);
+		if (loc.IsValid())
+		{
+			return bp;
+		}
+	}
+
+	return {};
+}
+
 void DisassemblyView::updateDisasmShow(lldb::SBAddress const& address)
 {
 	int i = 0;
@@ -176,7 +230,10 @@ void DisassemblyView::updateDisasmShow(lldb::SBAddress const& address)
 	refresh();
 
 	if (i != m_insts.GetSize())
+	{
+		m_selectedLine = i;
 		scrollToLine(i);
+	}
 	else
 	{
 		// TODO: 花指令 or 反汇编错误？

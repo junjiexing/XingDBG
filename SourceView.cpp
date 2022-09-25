@@ -16,6 +16,16 @@ SourceView::SourceView()
 
 	auto lay = new QVBoxLayout(this);
 	lay->addWidget(m_tab);
+
+	auto bpAct = new QAction;
+	bpAct->setShortcut(Qt::Key_F2);
+	bpAct->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+	connect(bpAct, &QAction::triggered, this, [] 
+		{
+			//TODO:
+		});
+	addAction(bpAct);
+
 }
 
 SourceView::~SourceView() = default;

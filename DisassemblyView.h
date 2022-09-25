@@ -28,6 +28,8 @@ private:
 	bool disasmSymbolContext(lldb::SBSymbolContext& ctx, lldb::SBTarget& target);
 	bool disasmAddress(uint64_t address, lldb::SBTarget& target);
 
+	lldb::SBBreakpoint findBreakpointByAddress(lldb::addr_t addr);
+
 private:
 	lldb::SBInstructionList m_insts;
 	lldb::SBAddress m_pcAddress;
