@@ -11,17 +11,22 @@
 #include <memory>
 
 
+class SourceView;
+
 class MainWindow : public KDDockWidgets::MainWindow
 {
 	Q_OBJECT
 public:
 	MainWindow();
 
+protected:
+	void closeEvent(QCloseEvent* event) override;
+
 private:
 	void setupDockWidgets();
-protected:
-	void closeEvent(QCloseEvent *event) override;
 
+private:
+	KDDockWidgets::DockWidget* m_sourceDock = nullptr;
 };
 
 

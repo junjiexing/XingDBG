@@ -184,6 +184,7 @@ void DisassemblyView::updateDisasmShow(lldb::SBAddress const& address)
 }
 void DisassemblyView::contextMenuEvent(QContextMenuEvent *event)
 {
+	//TODO: action放到构造函数.
 	QMenu menu;
 	menu.addAction(tr("Go to"), this, [this]
 	{

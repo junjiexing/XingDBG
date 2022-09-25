@@ -49,7 +49,20 @@ add_executable(${PROJECT_NAME}
         MemoryView.h
         AbstractTableView.cpp
         AbstractTableView.h
-        OpenExeDlg.cpp OpenExeDlg.h AttachDlg.cpp AttachDlg.h SymbolView.cpp SymbolView.h Utils.h SelectPlatformDlg.cpp SelectPlatformDlg.h)
+        OpenExeDlg.h
+        OpenExeDlg.cpp
+        AttachDlg.h
+        AttachDlg.cpp
+        SymbolView.h
+        SymbolView.cpp
+        Utils.h
+        SelectPlatformDlg.h
+        SelectPlatformDlg.cpp
+        SourceView.h
+        SourceView.cpp
+        SourceListView.h
+        SourceListView.cpp
+)
 
 set(LIBLLDB_MODULE_NAME lldb)
 

@@ -5,7 +5,6 @@
 #include "MainWindow.h"
 #include <kddockwidgets/DockWidget.h>
 #include <QtWidgets>
-#include <memory>
 #include "App.h"
 #include "DisassemblyView.h"
 #include "RegisterView.h"
@@ -17,6 +16,8 @@
 #include "AttachDlg.h"
 #include "SymbolView.h"
 #include "SelectPlatformDlg.h"
+#include "SourceView.h"
+#include "SourceListView.h"
 
 
 MainWindow::MainWindow()
@@ -116,6 +117,11 @@ MainWindow::MainWindow()
 		if (err.Fail())
 			app()->e(QString("Step into instruction failed: ") + err.GetCString());
 	}, QKeySequence(Qt::Key_F7));
+	debugMenu->addAction(tr("Switch breakpoint"), this, []
+	{
+			lldb::SBFileSpec f("E:\\msys64\\home\\xing\\a.cpp");
+			core()->getTarget().BreakpointCreateByLocation(f, 6);
+	});
 	auto debugToolBar = new QToolBar("Debug", this);
 	debugToolBar->addAction(runAct);
 	debugToolBar->addAction(stepOverAct);
@@ -139,6 +145,22 @@ MainWindow::MainWindow()
 	setupDockWidgets();
 
 	statusBar()->showMessage("Done.");
+
+
+
+
+
+
+
+	connect(app(), &App::openSourceFile, this, [this](QString const& path)
+	{
+		if (!m_sourceDock->isVisible())
+		{
+			m_sourceDock->show();
+		}
+		auto srcView = static_cast<SourceView*>(m_sourceDock->widget());
+		srcView->addSourceFile(path);
+	});
 }
 
 void MainWindow::setupDockWidgets()
@@ -158,11 +180,13 @@ void MainWindow::setupDockWidgets()
 	cpuDock->setWidget(disasmView);
 	addDockWidget(cpuDock, KDDockWidgets::Location_OnLeft);
 
-	auto sourceDock = new KDDockWidgets::DockWidget("Source");
-	auto widget7 = new QLabel("假装有源文件");
-	widget7->setStyleSheet("background: black;");
-	sourceDock->setWidget(widget7);
-	addDockWidget(sourceDock, KDDockWidgets::Location_None, cpuDock);
+	auto sourceListDock = new KDDockWidgets::DockWidget("Source List");
+	sourceListDock->setWidget(new SourceListView());
+	addDockWidget(sourceListDock, KDDockWidgets::Location_OnRight);
+
+	m_sourceDock = new KDDockWidgets::DockWidget("Source");
+	m_sourceDock->setWidget(new SourceView());
+	addDockWidget(m_sourceDock, KDDockWidgets::Location_OnRight);
 
 
 	auto regDock = new KDDockWidgets::DockWidget(tr("Register"));
@@ -171,7 +195,7 @@ void MainWindow::setupDockWidgets()
 
 	auto threadDock = new KDDockWidgets::DockWidget(tr("Thread"));
 	threadDock->setWidget(new ThreadView());
-	addDockWidget(threadDock, KDDockWidgets::Location_None, regDock);
+	addDockWidget(threadDock, KDDockWidgets::Location_OnRight, regDock);
 
 
 	addDockWidget(outputDock, KDDockWidgets::Location_OnBottom);
@@ -190,6 +214,7 @@ void MainWindow::setupDockWidgets()
 	auto symbolDock = new KDDockWidgets::DockWidget(tr("Symbol"));
 	symbolDock->setWidget(new SymbolView());
 	addDockWidget(symbolDock, KDDockWidgets::Location_OnLeft, regDock);
+	
 
 }
 
