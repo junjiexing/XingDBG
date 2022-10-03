@@ -18,6 +18,7 @@
 #include "SelectPlatformDlg.h"
 #include "SourceView.h"
 #include "SourceListView.h"
+#include "BreakpointView.h"
 
 
 MainWindow::MainWindow()
@@ -214,7 +215,11 @@ void MainWindow::setupDockWidgets()
 	auto symbolDock = new KDDockWidgets::DockWidget(tr("Symbol"));
 	symbolDock->setWidget(new SymbolView());
 	addDockWidget(symbolDock, KDDockWidgets::Location_OnLeft, regDock);
-	
+
+	auto bpDock = new KDDockWidgets::DockWidget(tr("Breakpoint"));
+	bpDock->setWidget(new BreakpointView());
+	addDockWidget(bpDock, KDDockWidgets::Location_OnLeft, regDock);
+
 
 }
 

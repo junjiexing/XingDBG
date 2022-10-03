@@ -62,6 +62,8 @@ add_executable(${PROJECT_NAME}
         SourceView.cpp
         SourceListView.h
         SourceListView.cpp
+        BreakpointView.h
+        BreakpointView.cpp
 )
 
 set(LIBLLDB_MODULE_NAME lldb)

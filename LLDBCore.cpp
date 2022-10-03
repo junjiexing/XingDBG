@@ -20,6 +20,8 @@ void LLDBCore::run()
 			break;
 		}
 
+		app()->i(tr("on debug event:") + lldb::SBEvent::GetCStringFromEvent(m_event));
+
 		if((m_event.GetType() & lldb::SBProcess::eBroadcastBitStateChanged) > 0)
 		{
 			auto state = lldb::SBProcess::GetStateFromEvent(m_event);
