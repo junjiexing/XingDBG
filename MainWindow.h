@@ -24,9 +24,20 @@ protected:
 
 private:
 	void setupDockWidgets();
+	void setupMenuToolBar();
 
 private:
+	KDDockWidgets::DockWidget* m_cpuDock = nullptr;
+	KDDockWidgets::DockWidget* m_regDock = nullptr;
+	KDDockWidgets::DockWidget* m_outputDock = nullptr;
+	KDDockWidgets::DockWidget* m_callStackDock = nullptr;
+	KDDockWidgets::DockWidget* m_memoryDock = nullptr;
+
+	KDDockWidgets::DockWidget* m_sourceListDock = nullptr;
 	KDDockWidgets::DockWidget* m_sourceDock = nullptr;
+	KDDockWidgets::DockWidget* m_threadDock = nullptr;
+	KDDockWidgets::DockWidget* m_symbolDock = nullptr;
+	KDDockWidgets::DockWidget* m_bpDock = nullptr;
 };
 
 
