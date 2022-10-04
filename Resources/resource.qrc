@@ -1,0 +1,19 @@
+<RCC>
+    <qresource prefix="/">
+        <file>img/pause.png</file>
+        <file>img/run.png</file>
+        <file>img/stop.png</file>
+        <file>img/step-into.png</file>
+        <file>img/step-out.png</file>
+        <file>img/step-over.png</file>
+        <file>img/open.png</file>
+        <file>img/attach-to.png</file>
+        <file>img/exit.png</file>
+        <file>img/restart.png</file>
+        <file>img/about.png</file>
+        <file>img/about-qt.png</file>
+        <file>img/output.png</file>
+        <file>img/source-code.png</file>
+        <file>img/source-list.png</file>
+    </qresource>
+</RCC>

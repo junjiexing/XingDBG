@@ -6,19 +6,19 @@
 #include <kddockwidgets/DockWidget.h>
 #include <QtWidgets>
 #include "App.h"
-#include "DisassemblyView.h"
-#include "RegisterView.h"
-#include "ThreadView.h"
-#include "CallStackView.h"
-#include "OutputView.h"
-#include "MemoryView.h"
-#include "OpenExeDlg.h"
-#include "AttachDlg.h"
-#include "SymbolView.h"
-#include "SelectPlatformDlg.h"
-#include "SourceView.h"
-#include "SourceListView.h"
-#include "BreakpointView.h"
+#include "Views/DisassemblyView.h"
+#include "Views/RegisterView.h"
+#include "Views/ThreadView.h"
+#include "Views/CallStackView.h"
+#include "Views/OutputView.h"
+#include "Views/MemoryView.h"
+#include "Views/SymbolView.h"
+#include "Views/SourceView.h"
+#include "Views/SourceListView.h"
+#include "Views/BreakpointView.h"
+#include "Dialogs/SelectPlatformDlg.h"
+#include "Dialogs/OpenExeDlg.h"
+#include "Dialogs/AttachDlg.h"
 
 
 MainWindow::MainWindow()
@@ -30,7 +30,7 @@ MainWindow::MainWindow()
         SelectPlatformDlg dlg(this);
         dlg.exec();
     });
-	auto openAct = fileMenu->addAction("Open executable", this, [this]
+	auto openAct = fileMenu->addAction(QIcon(":/img/open.png"), "Open executable", this, [this]
 	{
 		OpenExeDlg dlg(this);
 		if (dlg.exec() != QDialog::Accepted)
@@ -48,7 +48,7 @@ MainWindow::MainWindow()
 
 		core()->start();
 	});
-	auto attachAct = fileMenu->addAction("Attach", this, [this]
+	auto attachAct = fileMenu->addAction(QIcon(":/img/attach-to.png"),  "Attach", this, [this]
 	{
 		AttachDlg dlg(this);
 		if (dlg.exec() != QDialog::Accepted)
@@ -59,34 +59,32 @@ MainWindow::MainWindow()
 		core()->start();
 	});
 
-//	fileMenu->addAction("远程调试");
-	fileMenu->addAction("打开源文件");
 	fileMenu->addSeparator();
-	fileMenu->addAction("配置");
+	fileMenu->addAction("Config");
 	fileMenu->addSeparator();
-	fileMenu->addAction("退出", this, &MainWindow::close);
-	auto fileToolBar = new QToolBar("文件", this);
+	fileMenu->addAction(QIcon(":/img/exit.png"),  "Exit", this, &MainWindow::close);
+	auto fileToolBar = new QToolBar("File", this);
 	fileToolBar->addAction(openAct);
 	fileToolBar->addAction(attachAct);
 	addToolBar(fileToolBar);
 
 
-	auto viewMenu = menuBar()->addMenu("视图");
-	viewMenu->addAction("输出");
-	viewMenu->addAction("寄存器");
-	viewMenu->addAction("调用堆栈");
-	viewMenu->addAction("内存");
-	viewMenu->addAction("模块");
-	viewMenu->addAction("线程");
-	viewMenu->addAction("监视");
+	auto viewMenu = menuBar()->addMenu("View");
+	viewMenu->addAction("Output");
+	viewMenu->addAction("Register");
+	viewMenu->addAction("Call stack");
+	viewMenu->addAction("Memory");
+	viewMenu->addAction("Module");
+	viewMenu->addAction("Thread");
+	viewMenu->addAction("Watch");
 	viewMenu->addSeparator();
-	viewMenu->addAction("保存布局", this, [this]
+	viewMenu->addAction("Save layout", this, [this]
 	{
 		KDDockWidgets::LayoutSaver saver;
 		const bool result = saver.saveToFile("main_layout.json");
 		statusBar()->showMessage(result ? "保存布局成功" : "保存布局失败");
 	});
-	viewMenu->addAction("加载布局", this, [this]
+	viewMenu->addAction("Restore layout", this, [this]
 	{
 		KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
 		const bool result = saver.restoreFromFile("main_layout.json");
@@ -94,15 +92,15 @@ MainWindow::MainWindow()
 	});
 
 	auto debugMenu = menuBar()->addMenu(tr("Debug"));
-	auto runAct = debugMenu->addAction(QIcon(), tr("Run"), this, []
+	auto runAct = debugMenu->addAction(QIcon(":/img/run.png"), tr("Run"), this, []
 	{
 		core()->getProcess().Continue();
 	}, QKeySequence(Qt::Key_F9));
-	debugMenu->addAction(tr("Pause"));
-	debugMenu->addAction(tr("Restart"));
-	debugMenu->addAction(tr("Stop"));
+	debugMenu->addAction(QIcon(":/img/pause.png"),  tr("Pause"));
+	debugMenu->addAction(QIcon(":/img/restart.png"), tr("Restart"));
+	debugMenu->addAction(QIcon(":/img/stop.png"),  tr("Stop"));
 	debugMenu->addSeparator();
-	auto stepOverAct = debugMenu->addAction(QIcon(), tr("Step over"), this, []
+	auto stepOverAct = debugMenu->addAction(QIcon(":/img/step-over.png"),  tr("Step over"), this, []
 	{
 //		core()->getProcess().GetSelectedThread().StepOver();
 		lldb::SBError err;
@@ -110,7 +108,7 @@ MainWindow::MainWindow()
 		if (err.Fail())
 			app()->e(QString("Step over instruction failed: ").append(err.GetCString()));
 	}, QKeySequence(Qt::Key_F8));
-	auto stepIntoAct = debugMenu->addAction(QIcon(), tr("Step into"), this, []
+	auto stepIntoAct = debugMenu->addAction(QIcon(":/img/step-into.png"),  tr("Step into"), this, []
 	{
 //		core()->getProcess().GetSelectedThread().StepInto();
 		lldb::SBError err;
@@ -120,8 +118,8 @@ MainWindow::MainWindow()
 	}, QKeySequence(Qt::Key_F7));
 	debugMenu->addAction(tr("Switch breakpoint"), this, []
 	{
-			lldb::SBFileSpec f("E:\\msys64\\home\\xing\\a.cpp");
-			core()->getTarget().BreakpointCreateByLocation(f, 6);
+			//lldb::SBFileSpec f("E:\\msys64\\home\\xing\\a.cpp");
+			//core()->getTarget().BreakpointCreateByLocation(f, 6);
 	});
 	auto debugToolBar = new QToolBar("Debug", this);
 	debugToolBar->addAction(runAct);
@@ -131,11 +129,11 @@ MainWindow::MainWindow()
 
 
 	auto helpMenu = menuBar()->addMenu(tr("Help"));
-	auto aboutQtAct = helpMenu->addAction(tr("About Qt"), this, [this]
+	auto aboutQtAct = helpMenu->addAction(QIcon(":/img/about-qt.png"), tr("About Qt"), this, [this]
 	{
 		QMessageBox::aboutQt(this);
 	});
-	auto aboutAct = helpMenu->addAction(tr("About"));
+	auto aboutAct = helpMenu->addAction(QIcon(":/img/about.png"), tr("About"));
 	auto helpToolBar = new QToolBar(tr("Help"), this);
 	helpToolBar->addAction(aboutAct);
 	addToolBar(helpToolBar);
@@ -172,6 +170,7 @@ void MainWindow::setupDockWidgets()
 
 	auto outputDock = new KDDockWidgets::DockWidget(tr("Output"));
 	outputDock->setWidget(new OutputView());
+	outputDock->setIcon(QIcon(":/img/output.png"));
 
 
 	auto cpuDock = new KDDockWidgets::DockWidget(tr("CPU"));
@@ -179,14 +178,17 @@ void MainWindow::setupDockWidgets()
 	disasmView->init();
 	disasmView->updateFont(f);
 	cpuDock->setWidget(disasmView);
+	cpuDock->setIcon(QIcon(":/img/cpu.png"));
 	addDockWidget(cpuDock, KDDockWidgets::Location_OnLeft);
 
 	auto sourceListDock = new KDDockWidgets::DockWidget("Source List");
 	sourceListDock->setWidget(new SourceListView());
+	sourceListDock->setIcon(QIcon(":/img/source-list.png"));
 	addDockWidget(sourceListDock, KDDockWidgets::Location_OnRight);
 
 	m_sourceDock = new KDDockWidgets::DockWidget("Source");
 	m_sourceDock->setWidget(new SourceView());
+	m_sourceDock->setIcon(QIcon(":/img/source-code.png"));
 	addDockWidget(m_sourceDock, KDDockWidgets::Location_OnRight);
 
 
