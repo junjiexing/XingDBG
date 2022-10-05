@@ -1,0 +1,13 @@
+diff --git a/lldb/source/API/CMakeLists.txt b/lldb/source/API/CMakeLists.txt
+index 46307b487a54..0db1d930d946 100644
+--- a/lldb/source/API/CMakeLists.txt
++++ b/lldb/source/API/CMakeLists.txt
+@@ -15,7 +15,7 @@ if(LLDB_ENABLE_LUA)
+   set(lldb_lua_wrapper ${lua_bindings_dir}/LLDBWrapLua.cpp)
+ endif()
+ 
+-add_lldb_library(liblldb SHARED ${option_framework}
++add_lldb_library(liblldb STATIC ${option_framework}
+   SBAddress.cpp
+   SBAttachInfo.cpp
+   SBBlock.cpp
