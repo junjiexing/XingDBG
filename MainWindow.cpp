@@ -196,8 +196,7 @@ void MainWindow::setupMenuToolBar()
 	}, QKeySequence(Qt::Key_F7));
 	debugMenu->addAction(tr("Switch breakpoint"), this, []
 	{
-		//lldb::SBFileSpec f("E:\\msys64\\home\\xing\\a.cpp");
-		//core()->getTarget().BreakpointCreateByLocation(f, 6);
+		//TODO:
 	});
 	auto debugToolBar = new QToolBar("Debug", this);
 	debugToolBar->addAction(runAct);
