@@ -417,6 +417,8 @@ add_executable(${PROJECT_NAME}
         Dialogs/OpenExeDlg.cpp
         Dialogs/AttachDlg.h
         Dialogs/AttachDlg.cpp
+        Dialogs/AboutDlg.h
+        Dialogs/AboutDlg.cpp
         Views/SymbolView.h
         Views/SymbolView.cpp
         Views/SourceView.h

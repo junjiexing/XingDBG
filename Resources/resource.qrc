@@ -15,5 +15,7 @@
         <file>img/output.png</file>
         <file>img/source-code.png</file>
         <file>img/source-list.png</file>
+        <file>img/cpu.png</file>
+        <file>icon.ico</file>
     </qresource>
 </RCC>

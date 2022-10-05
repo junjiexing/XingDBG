@@ -19,6 +19,7 @@
 #include "Dialogs/SelectPlatformDlg.h"
 #include "Dialogs/OpenExeDlg.h"
 #include "Dialogs/AttachDlg.h"
+#include "Dialogs/AboutDlg.h"
 
 
 MainWindow::MainWindow()
@@ -210,7 +211,11 @@ void MainWindow::setupMenuToolBar()
 	{
 		QMessageBox::aboutQt(this);
 	});
-	auto aboutAct = helpMenu->addAction(QIcon(":/img/about.png"), tr("About"));
+	auto aboutAct = helpMenu->addAction(QIcon(":/img/about.png"), tr("About"), this, [this]
+	{
+		AboutDlg dlg(this);
+		dlg.exec();
+	});
 	auto helpToolBar = new QToolBar(tr("Help"), this);
 	helpToolBar->addAction(aboutAct);
 	addToolBar(helpToolBar);
