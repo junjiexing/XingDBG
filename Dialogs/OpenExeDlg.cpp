@@ -91,7 +91,7 @@ OpenExeDlg::OpenExeDlg(QWidget *parent)
     connect(chooseExeBtn, &QPushButton::clicked, this, [=, this]
     {
         auto path = QFileDialog::getOpenFileName(this, tr("Choose an executable"), {},
-                                                 "Executable files (*.exe);;All files (*.*)");
+                                                 "Executable files (*.exe);;All files (*)");
 
         if (path.isEmpty()) return;
         m_exePathEdt->setText(path);
