@@ -29,7 +29,7 @@ MainWindow::MainWindow()
 
 	setupDockWidgets();
 	setupMenuToolBar();
-	statusBar()->showMessage("Done.");
+	statusBar()->showMessage(tr("Done."));
 
 
 	connect(app(), &App::openSourceFile, this, [this](QString const& path)
@@ -82,11 +82,11 @@ void MainWindow::setupDockWidgets()
 
 
 
-	m_sourceListDock = new KDDockWidgets::DockWidget("Source List");
+	m_sourceListDock = new KDDockWidgets::DockWidget(tr("Source List"));
 	m_sourceListDock->setWidget(new SourceListView());
 	m_sourceListDock->setIcon(QIcon(":/img/source-list.png"));
 
-	m_sourceDock = new KDDockWidgets::DockWidget("Source");
+	m_sourceDock = new KDDockWidgets::DockWidget(tr("Source"));
 	m_sourceDock->setWidget(new SourceView());
 	m_sourceDock->setIcon(QIcon(":/img/source-code.png"));
 
@@ -102,7 +102,7 @@ void MainWindow::setupDockWidgets()
 
 void MainWindow::setupMenuToolBar()
 {
-	auto fileMenu = menuBar()->addMenu("File");
+	auto fileMenu = menuBar()->addMenu(tr("File"));
 	fileMenu->addAction(tr("Change platform"), this, [this]
 	{
 		SelectPlatformDlg dlg(this);
@@ -138,35 +138,36 @@ void MainWindow::setupMenuToolBar()
 	});
 
 	fileMenu->addSeparator();
-	fileMenu->addAction("Config");
+	fileMenu->addAction(tr("Config"));
 	fileMenu->addSeparator();
-	fileMenu->addAction(QIcon(":/img/exit.png"), "Exit", this, &MainWindow::close);
-	auto fileToolBar = new QToolBar("File", this);
+	fileMenu->addAction(QIcon(":/img/exit.png"), tr("Exit"), this, &MainWindow::close);
+	auto fileToolBar = new QToolBar(tr("File"), this);
 	fileToolBar->addAction(openAct);
 	fileToolBar->addAction(attachAct);
 	addToolBar(fileToolBar);
 
 
 	auto viewMenu = menuBar()->addMenu("View");
-	viewMenu->addAction(m_outputDock->icon(), "Output", [this] {m_outputDock->show(); });
-	viewMenu->addAction(m_regDock->icon(), "Register", [this] {m_regDock->show(); });
-	viewMenu->addAction(m_callStackDock->icon(), "Call stack", [this] {m_callStackDock->show(); });
-	viewMenu->addAction(m_memoryDock->icon(), "Memory", [this] {m_memoryDock->show(); });
-	viewMenu->addAction(m_symbolDock->icon(), "Symbol", [this] {m_symbolDock->show(); });
-	viewMenu->addAction(m_threadDock->icon(), "Thread", [this] {m_threadDock->show(); });
-	viewMenu->addAction(m_bpDock->icon(), "Breakpoint", [this] {m_bpDock->show(); });
+	viewMenu->addAction(m_outputDock->icon(), tr("Output"), [this] {m_outputDock->show(); });
+	viewMenu->addAction(m_regDock->icon(), tr("Register"), [this] {m_regDock->show(); });
+	viewMenu->addAction(m_callStackDock->icon(), tr("Call stack"), [this] {m_callStackDock->show(); });
+	viewMenu->addAction(m_memoryDock->icon(), tr("Memory"), [this] {m_memoryDock->show(); });
+	viewMenu->addAction(m_symbolDock->icon(), tr("Symbol"), [this] {m_symbolDock->show(); });
+	viewMenu->addAction(m_threadDock->icon(), tr("Thread"), [this] {m_threadDock->show(); });
+	viewMenu->addAction(m_bpDock->icon(), tr("Breakpoint"), [this] {m_bpDock->show(); });
+	viewMenu->addAction(m_sourceListDock->icon(), tr("Source List"), [this] {m_sourceListDock->show(); });
 	viewMenu->addSeparator();
-	viewMenu->addAction("Save layout", this, [this]
+	viewMenu->addAction(tr("Save layout"), this, [this]
 	{
 		KDDockWidgets::LayoutSaver saver;
 		const bool result = saver.saveToFile("main_layout.json");
-		statusBar()->showMessage(result ? "保存布局成功" : "保存布局失败");
+		statusBar()->showMessage(result ? tr("Save layout success.") : tr("Save layout failed."));
 	});
-	viewMenu->addAction("Restore layout", this, [this]
+	viewMenu->addAction(tr("Restore layout"), this, [this]
 	{
 		KDDockWidgets::LayoutSaver saver(KDDockWidgets::RestoreOption_RelativeToMainWindow);
 		const bool result = saver.restoreFromFile("main_layout.json");
-		statusBar()->showMessage(result ? "加载布局成功" : "加载布局失败");
+		statusBar()->showMessage(result ? tr("Load layout success.") : tr("Load layout failed."));
 	});
 
 	auto debugMenu = menuBar()->addMenu(tr("Debug"));
@@ -184,7 +185,7 @@ void MainWindow::setupMenuToolBar()
 		lldb::SBError err;
 		core()->getProcess().GetSelectedThread().StepInstruction(true, err);
 		if (err.Fail())
-			app()->e(QString("Step over instruction failed: ").append(err.GetCString()));
+			app()->e(tr("Step over instruction failed: ").append(err.GetCString()));
 	}, QKeySequence(Qt::Key_F8));
 	auto stepIntoAct = debugMenu->addAction(QIcon(":/img/step-into.png"), tr("Step into"), this, []
 	{
@@ -192,13 +193,13 @@ void MainWindow::setupMenuToolBar()
 		lldb::SBError err;
 		core()->getProcess().GetSelectedThread().StepInstruction(false, err);
 		if (err.Fail())
-			app()->e(QString("Step into instruction failed: ") + err.GetCString());
+			app()->e(tr("Step into instruction failed: ") + err.GetCString());
 	}, QKeySequence(Qt::Key_F7));
 	debugMenu->addAction(tr("Switch breakpoint"), this, []
 	{
 		//TODO:
 	});
-	auto debugToolBar = new QToolBar("Debug", this);
+	auto debugToolBar = new QToolBar(tr("Debug"), this);
 	debugToolBar->addAction(runAct);
 	debugToolBar->addAction(stepOverAct);
 	debugToolBar->addAction(stepIntoAct);
