@@ -744,7 +744,12 @@ elseif(APPLE)
             edit
             lzma
             xml2
-            panel)
+            panel
+            "-framework Foundation"
+            "-framework CoreFoundation"
+            "-framework CoreFoundation"
+            "-framework Security"
+    )
 elseif(UNIX)
 	message(STATUS "Now is UNIX-like OS's.")
 else()
@@ -815,7 +820,3 @@ target_link_libraries(${PROJECT_NAME}
         ${LIBS_EXTRA}
         )
 
-target_link_libraries(${PROJECT_NAME} "-framework Foundation")
-target_link_libraries(${PROJECT_NAME} "-framework CoreFoundation")
-target_link_libraries(${PROJECT_NAME} "-framework CoreServices")
-target_link_libraries(${PROJECT_NAME} "-framework Security")

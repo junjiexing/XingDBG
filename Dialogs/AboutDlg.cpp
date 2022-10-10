@@ -10,6 +10,11 @@ AboutDlg::AboutDlg(QWidget *parent)
 	setWindowTitle(tr("About XingDBG"));
 	auto logoLab = new QLabel;
 	logoLab->setPixmap(QIcon(":/icon.ico").pixmap(128, 128));
+	auto thanksLab= new QLabel;
+	thanksLab->setText("Icons: <a href='https://github.com/saixmh'>LinGo</a>");
+	thanksLab->setTextFormat(Qt::RichText);
+	thanksLab->setTextInteractionFlags(Qt::TextBrowserInteraction);
+	thanksLab->setOpenExternalLinks(true);
 	auto blogLab = new QLabel;
 	blogLab->setText("blog: <a href='https://xing.re'>https://xing.re</a>");
 	blogLab->setTextFormat(Qt::RichText);
@@ -23,6 +28,7 @@ AboutDlg::AboutDlg(QWidget *parent)
 
 	auto lay = new QVBoxLayout(this);
 	lay->addWidget(logoLab, 0, Qt::AlignCenter);
+	lay->addWidget(thanksLab, 0, Qt::AlignCenter);
 	lay->addWidget(blogLab, 0, Qt::AlignCenter);
 	lay->addWidget(githubLab, 0, Qt::AlignCenter);
 }
