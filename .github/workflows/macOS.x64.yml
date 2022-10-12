@@ -24,6 +24,8 @@ jobs:
           tar -xJf qt.tar.xz -C ${{github.workspace}}/out/
           wget https://github.com/XingDBG/dbg.deps.mac.x64/releases/download/v0.1.0/lldb.tar.xz -q
           tar -xJf lldb.tar.xz -C ${{github.workspace}}/out/
+          ls -laF
+          ls -laF ${{github.workspace}}/out/
           cp ${{github.workspace}}/out/lldb/bin/lldb-server ${{github.workspace}}/out
             
       - name: Setup Ninja

@@ -23,9 +23,9 @@ jobs:
       working-directory: ${{github.workspace}}
       shell: pwsh
       run: |
-        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.x64/releases/download/v0.1.0/qt.7z
+        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.x64/releases/download/v0.1.0/qt.7z -OutFile qt.7z
         &7z x qt.7z -o${{github.workspace}}\out\
-        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.x64/releases/download/v0.1.0/lldb.7z
+        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.x64/releases/download/v0.1.0/lldb.7z -OutFile lldb.7z
         &7z x lldb.7z -o${{github.workspace}}\out\
 
 
