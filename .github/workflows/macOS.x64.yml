@@ -1,0 +1,74 @@
+name: macOS_x64
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          path: 'XingDBG'
+
+      - name: Make dir
+        working-directory: ${{github.workspace}}
+        run: |
+          mkdir out
+          mkdir build
+
+      - name: Download deps
+        id: downloadDeps
+        working-directory: ${{github.workspace}}
+        run: |
+          wget https://github.com/XingDBG/dbg.deps.mac.x64/releases/download/v0.1.0/qt.tar.xz -q
+          tar -xJf qt.tar.xz -C ${{github.workspace}}/out/
+          wget https://github.com/XingDBG/dbg.deps.mac.x64/releases/download/v0.1.0/lldb.tar.xz -q
+          tar -xJf lldb.tar.xz -C ${{github.workspace}}/out/
+          cp ${{github.workspace}}/out/lldb/bin/lldb-server ${{github.workspace}}/out
+            
+      - name: Setup Ninja
+        run: |
+          brew install ninja
+
+      - name: Build XingDBG
+        working-directory: ${{github.workspace}}
+        run: |
+          cd build
+          mkdir XingDBG
+          cd XingDBG
+          cmake -G Ninja -DCMAKE_BUILD_TYPE=Release \
+            -DQt6_DIR="${{github.workspace}}/out/qt/lib/cmake/Qt6" \
+            -DQt6BundledPcre2_DIR="${{github.workspace}}/out/qt/lib/cmake/Qt6BundledPcre2" \
+            -DQt6BundledLibpng_DIR="${{github.workspace}}/out/qt/lib/cmake/Qt6BundledLibpng" \
+            -DQt6CoreTools_DIR="${{github.workspace}}/out/qt/lib/cmake/Qt6CoreTools" \
+            -DQt6BundledHarfbuzz_DIR="${{github.workspace}}/out/qt/lib/cmake/Qt6BundledHarfbuzz" \
+            -DQt6BundledFreetype_DIR="${{github.workspace}}/out/qt/lib/cmake/Qt6BundledFreetype" \
+            -DQt6GuiTools_DIR="${{github.workspace}}/out/qt/lib/cmake/Qt6GuiTools" \
+            -DQt6WidgetsTools_DIR="${{github.workspace}}/out/qt/lib/cmake/Qt6WidgetsTools" \
+            -DLLVM_DIR="${{github.workspace}}/out/lldb/lib/cmake/llvm" \
+            -DKDDockWidgets_QT6=ON \
+            -DKDDockWidgets_STATIC=ON \
+            -DKDDockWidgets_EXAMPLES=OFF \
+            -DKDDockWidgets_STATIC=ON \
+            ${{github.workspace}}/XingDBG
+          cmake --build . --parallel
+          cp XingDBG ${{github.workspace}}/out/
+
+      - name: Pack files
+        working-directory: ${{github.workspace}}/out
+        run: |
+          tar -cJf XingDBG-mac-x64.tar.xz XingDBG lldb-server
+
+      - uses: actions/upload-artifact@v2
+        with:
+          path: ${{github.workspace}}/out/*.tar.xz
+
+      - uses: xresloader/upload-to-github-release@v1
+        if: contains(github.ref, 'tags/')
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          file: "out/*.tar.xz"
+          overwrite: true
+          tags: true
+          draft: false

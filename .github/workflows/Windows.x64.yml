@@ -1,0 +1,89 @@
+name: WindowsBuild
+
+on: [push, pull_request]
+
+jobs:
+  Build:
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        path: 'XingDBG'
+
+    - name: Make dir
+      working-directory: ${{github.workspace}}
+      shell: cmd
+      run: |
+        mkdir out
+        mkdir build
+
+    - name: Download deps
+      id: downloadDeps
+      working-directory: ${{github.workspace}}
+      shell: pwsh
+      run: |
+        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.x64/releases/download/v0.1.0/qt.7z
+        &7z x qt.7z -o${{github.workspace}}\out\
+        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.x64/releases/download/v0.1.0/lldb.7z
+        &7z x lldb.7z -o${{github.workspace}}\out\
+
+
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.10.7'
+        architecture: 'x64' 
+
+    - name: Configure build for amd64
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: amd64
+        spectre: false
+        vsversion: 2022
+
+    - name: Build XingDBG
+      working-directory: ${{github.workspace}}
+      shell: cmd
+      run: |
+        cd build
+        mkdir XingDBG
+        cd XingDBG
+        set INCLUDE=%VSINSTALLDIR%\DIA SDK\include;%INCLUDE%
+        set LIB=%VSINSTALLDIR%\DIA SDK\lib\amd64;%LIB%
+        cmake -G Ninja -DCMAKE_BUILD_TYPE=Release^
+          -DQt6_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6"^
+          -DQt6BundledPcre2_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6BundledPcre2"^
+          -DQt6BundledLibpng_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6BundledLibpng"^
+          -DQt6CoreTools_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6CoreTools"^
+          -DQt6BundledHarfbuzz_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6BundledHarfbuzz"^
+          -DQt6BundledFreetype_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6BundledFreetype"^
+          -DQt6GuiTools_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6GuiTools"^
+          -DQt6WidgetsTools_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6WidgetsTools"^
+          -DLLVM_DIR="${{github.workspace}}\out\lldb\lib\cmake\llvm"^
+          -DKDDockWidgets_QT6=ON^
+          -DKDDockWidgets_STATIC=ON^
+          -DKDDockWidgets_EXAMPLES=OFF^
+          -DKDDockWidgets_STATIC=ON^
+          ${{github.workspace}}/XingDBG
+        cmake --build . --parallel
+        copy XingDBG.exe ${{github.workspace}}\out\
+
+
+    - name: Pack files
+      working-directory: ${{github.workspace}}\out\
+      run: |
+          &7z a XingDBG-win-x64.7z XingDBG.exe
+
+    - uses: actions/upload-artifact@v2
+      with:
+        path: ${{github.workspace}}\out\*.7z
+
+    - uses: xresloader/upload-to-github-release@v1
+      if: contains(github.ref, 'tags/')
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        file: "out/*.7z"
+        overwrite: true
+        tags: true
+        draft: false

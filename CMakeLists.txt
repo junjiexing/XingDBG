@@ -388,7 +388,7 @@ if(WIN32)
             rpcrt4.lib
             version.lib
             dbghelp.lib
-            "C:/Program Files/Microsoft Visual Studio/2022/Community/DIA SDK/lib/amd64/diaguids.lib"
+            diaguids.lib
     )
 elseif(APPLE)
 	message(STATUS "Build for macOS.")
