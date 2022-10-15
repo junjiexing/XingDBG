@@ -16,6 +16,8 @@ BreakpointView::BreakpointView()
 		<< tr("Enabled") << tr("Hardware") << tr("Internal") << tr("Valid")
 	);
 
+	connect(app(), &App::onBreakpointChange, this, &BreakpointView::refresh);
+
 	auto vlay = new QVBoxLayout(this);
 	vlay->addWidget(m_tree);
 }

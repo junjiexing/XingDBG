@@ -45,7 +45,29 @@ void App::logInfo(const QString& msg)
 
 void App::resetCore()
 {
-	lldbCore = std::make_unique<LLDBCore>();
+	auto listener = m_debugger.GetListener();
+
+	listener.StartListeningForEventClass(
+		m_debugger,
+		lldb::SBProcess::GetBroadcasterClassName(),
+		0xFFFFFFFF);
+
+	listener.StartListeningForEventClass(
+		m_debugger,
+		lldb::SBTarget::GetBroadcasterClassName(),
+		0xFFFFFFFF);
+
+	listener.StartListeningForEventClass(
+		m_debugger,
+		lldb::SBCommandInterpreter::GetBroadcasterClass(),
+		0xFFFFFFFF);
+
+	listener.StartListeningForEventClass(
+		m_debugger,
+		lldb::SBThread::GetBroadcasterClassName(),
+		0xFFFFFFFF);
+
+	lldbCore = std::make_unique<LLDBCore>(listener);
 }
 
 LLDBCore *App::getDbgCore()

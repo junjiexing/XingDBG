@@ -13,7 +13,7 @@ class LLDBCore: public QThread
 Q_OBJECT
 
 public:
-	explicit LLDBCore();
+	explicit LLDBCore(const lldb::SBListener& listener);
 	~LLDBCore() override;
 
 	static bool init();

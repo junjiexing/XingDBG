@@ -34,7 +34,7 @@ SymbolView::SymbolView()
 	auto searchSymbolEdt = new QLineEdit;
 	auto searchSymbolIsRegexChk = new QCheckBox(tr("Regex"));
 
-	connect(app(), &App::onStopState, this, [=]
+	connect(app(), &App::onModulesChange, this, [=]
 	{
 		auto target = core()->getTarget();
 		auto moduleNum = int(target.GetNumModules());

@@ -40,6 +40,8 @@ signals:
 	void onStopState();
 	void onThreadFrameChanged(uint64_t tid, int index);
 	void gotoMemory(uint64_t address);
+	void onModulesChange();
+	void onBreakpointChange();
 
 	void openSourceFile(QString const& path);
 
