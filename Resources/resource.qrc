@@ -17,5 +17,8 @@
         <file>img/source-list.png</file>
         <file>img/cpu.png</file>
         <file>icon.ico</file>
+        <file>img/breakpoint-disabled.png</file>
+        <file>img/breakpoint-enabled.png</file>
+        <file>img/arrow-right.png</file>
     </qresource>
 </RCC>

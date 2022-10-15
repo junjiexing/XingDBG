@@ -13,6 +13,10 @@ public:
 	~SourceView() override;
 
 	void addSourceFile(QString const& path);
+
+	void updateBreakpoints();
+
+	void updateCurrentLine();
 private:
 	QTabWidget* m_tab = nullptr;
 };

@@ -1,0 +1,1 @@
+ÐÞ¸Ä×Ô Qt µÄ example: codeeditor syntaxhighlighter

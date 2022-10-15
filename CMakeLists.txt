@@ -801,6 +801,10 @@ add_executable(${PROJECT_NAME}
         Views/MemoryView.h
         Views/AbstractTableView.cpp
         Views/AbstractTableView.h
+        Widgets/CodeEditor.h
+        Widgets/CodeEditor.cpp
+        Widgets/Highlighter.h
+        Widgets/Highlighter.cpp
 )
 
 set(LIBLLDB_MODULE_NAME lldb)

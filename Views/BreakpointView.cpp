@@ -50,9 +50,9 @@ void BreakpointView::refresh()
 		}
 		else if (locNum > 1)
 		{
-			for (int i = 0; i < locNum; ++i)
+			for (int j = 0; j < locNum; ++j)
 			{
-				auto loc = bp.GetLocationAtIndex(i);
+				auto loc = bp.GetLocationAtIndex(j);
 				auto childItem = new QTreeWidgetItem(item);
 				childItem->setText(0, QString::number(loc.GetID()));
 				childItem->setText(1, Utils::hex(loc.GetLoadAddress()));

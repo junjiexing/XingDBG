@@ -4,6 +4,7 @@
 #include "LLDBCore.h"
 #include <QtWidgets>
 #include <QFile>
+#include "Widgets/CodeEditor.h"
 
 
 SourceView::SourceView()
@@ -26,6 +27,8 @@ SourceView::SourceView()
 		});
 	addAction(bpAct);
 
+	connect(app(), &App::onBreakpointChange, this, &SourceView::updateBreakpoints);
+	connect(app(), &App::onStopState, this, &SourceView::updateCurrentLine);
 }
 
 SourceView::~SourceView() = default;
@@ -51,11 +54,90 @@ void SourceView::addSourceFile(QString const& path)
 
 	auto bytes = f.readAll();
 	//TODO: encoding
-	auto edt = new QTextEdit;
-	edt->setText(QString::fromLocal8Bit(bytes));
+	auto edt = new CodeEditor;
+	edt->setPlainText(QString::fromLocal8Bit(bytes));
+	edt->setReadOnly(true);
 	edt->setProperty("path", path);
 
 	auto i = m_tab->addTab(edt, QFileInfo(path).fileName());
 	m_tab->setCurrentIndex(i);
+
+	updateBreakpoints();
+}
+
+void SourceView::updateBreakpoints()
+{
+	for (int i = 0; i < m_tab->count(); ++i)
+	{
+		auto edt = static_cast<CodeEditor*>(m_tab->widget(i));
+		edt->clearBreakpoint();
+	}
+
+	auto target = core()->getTarget();
+	for (int i = 0; i < target.GetNumBreakpoints(); ++i)
+	{
+		auto bp = target.GetBreakpointAtIndex(i);
+
+		auto locNum = bp.GetNumLocations();
+		for (int j = 0; j < bp.GetNumLocations(); ++j)
+		{
+			auto loc = bp.GetLocationAtIndex(j);
+			auto lineEntry = loc.GetAddress().GetLineEntry();
+			if (!lineEntry)
+			{
+				continue;
+			}
+
+			char pathBuf[1000];
+			lineEntry.GetFileSpec().GetPath(pathBuf, 1000);
+			QString path(pathBuf);
+
+			for (int k = 0; k < m_tab->count(); ++k)
+			{
+				auto edt = static_cast<CodeEditor*>(m_tab->widget(k));
+				auto pathProp = edt->property("path").toString();
+				if (pathProp == path)
+				{
+					auto line = lineEntry.GetLine();
+					edt->addBreakpoint({ line, bp.IsEnabled() });
+					break;
+				}
+			}
+		}
+	}
+}
+
+void SourceView::updateCurrentLine()
+{
+	for (int i = 0; i < m_tab->count(); ++i)
+	{
+		auto edt = static_cast<CodeEditor*>(m_tab->widget(i));
+		edt->setCurrentLine(0);
+	}
+
+	auto process = core()->getProcess();
+	auto lineEntry = process.GetSelectedThread().GetSelectedFrame().GetLineEntry();
+	
+	if (!lineEntry)
+	{
+		return;
+	}
+
+	char pathBuf[1000];
+	lineEntry.GetFileSpec().GetPath(pathBuf, 1000);
+	QString path(pathBuf);
+
+	for (int i = 0; i < m_tab->count(); ++i)
+	{
+		auto edt = static_cast<CodeEditor*>(m_tab->widget(i));
+		auto pathProp = edt->property("path").toString();
+		if (pathProp == path)
+		{
+			auto line = lineEntry.GetLine();
+			edt->setCurrentLine(int(line));
+			break;
+		}
+	}
+
 }
 
