@@ -53,6 +53,7 @@
 
 #include <QPainter>
 #include <QTextBlock>
+#include <QMouseEvent>
 
 
 //![constructor]
@@ -88,6 +89,32 @@ int CodeEditor::lineNumberAreaWidth()
     return space;
 }
 
+void CodeEditor::lineNumberAreaMouseReleaseEvent(QMouseEvent* event)
+{
+    if (!switchBreakpointCb) return;
+
+	QTextBlock block = firstVisibleBlock();
+	int blockNumber = block.blockNumber();
+	int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
+	int height = qRound(blockBoundingRect(block).height());
+	//![extraAreaPaintEvent_1]
+
+	//![extraAreaPaintEvent_2]
+	while (block.isValid() && top <= lineNumberArea->rect().bottom())
+    {
+        QRect bpRect(0, top, lineNumberArea->rect().width(), height);
+        if (bpRect.contains(event->pos()))
+        {
+            switchBreakpointCb(blockNumber + 1);
+        }
+
+		block = block.next();
+		top += height;
+        height = qRound(blockBoundingRect(block).height());
+		++blockNumber;
+	}
+}
+
 void CodeEditor::addBreakpoint(const Breakpoint& bp)
 {
     breakpoints.emplace_back(bp);
@@ -104,6 +131,11 @@ void CodeEditor::setCurrentLine(int i)
 {
     currentLine = i;
     lineNumberArea->update();
+}
+
+void CodeEditor::setOnSwitchBreakpoint(const std::function<void(int line)>& cb)
+{
+    switchBreakpointCb = cb;
 }
 
 //![extraAreaWidth]
@@ -150,7 +182,8 @@ void CodeEditor::highlightCurrentLine()
 {
     QList<QTextEdit::ExtraSelection> extraSelections;
 
-    if (!isReadOnly()) {
+    if (!isReadOnly())
+    {
         QTextEdit::ExtraSelection selection;
 
         QColor lineColor = QColor(Qt::yellow).lighter(160);
@@ -184,8 +217,10 @@ void CodeEditor::lineNumberAreaPaintEvent(QPaintEvent *event)
 //![extraAreaPaintEvent_1]
 
 //![extraAreaPaintEvent_2]
-    while (block.isValid() && top <= event->rect().bottom()) {
-        if (block.isVisible() && bottom >= event->rect().top()) {
+    while (block.isValid() && top <= event->rect().bottom())
+    {
+        if (block.isVisible() && bottom >= event->rect().top())
+        {
             QString number = QString::number(blockNumber + 1);
             painter.setPen(Qt::black);
             painter.drawText(30, top, lineNumberArea->width() - 33, fontMetrics().height(),

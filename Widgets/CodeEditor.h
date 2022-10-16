@@ -53,6 +53,7 @@
 
 #include <QPlainTextEdit>
 #include <vector>
+#include <functional>
 
 
 QT_BEGIN_NAMESPACE
@@ -76,6 +77,7 @@ public:
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();
+    void lineNumberAreaMouseReleaseEvent(QMouseEvent* event);
 
     struct Breakpoint 
     {
@@ -87,6 +89,8 @@ public:
     void clearBreakpoint();
 
     void setCurrentLine(int i);
+
+    void setOnSwitchBreakpoint(const std::function<void(int line)>& cb);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -101,6 +105,7 @@ private:
     Highlighter *highlighter;
     std::vector<Breakpoint> breakpoints;
     int currentLine = 0;
+    std::function<void(int line)> switchBreakpointCb;
 };
 
 //![codeeditordefinition]
@@ -121,6 +126,12 @@ protected:
     void paintEvent(QPaintEvent *event) override
     {
         codeEditor->lineNumberAreaPaintEvent(event);
+    }
+
+
+    void mouseReleaseEvent(QMouseEvent* event) override
+    {
+        codeEditor->lineNumberAreaMouseReleaseEvent(event);
     }
 
 private:
