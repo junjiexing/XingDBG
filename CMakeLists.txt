@@ -26,7 +26,7 @@ include_directories(3rdparty/KDDockWidgets/src/fwd_headers)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(WIN32)
-	message(STATUS "Build for windows")
+    message(STATUS "Build for windows")
     set(EXECUTABLE_EXTRA WIN32 ${CMAKE_CURRENT_SOURCE_DIR}/Resources/resource.rc)
     set(LIBS_EXTRA
             LLVMOption.lib
@@ -391,7 +391,11 @@ if(WIN32)
             diaguids.lib
     )
 elseif(APPLE)
-	message(STATUS "Build for macOS.")
+    message(STATUS "Build for macOS.")
+    set(MACOSX_BUNDLE_ICON_FILE XingDBG.icns)
+    set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/Resources/XingDBG.icns")
+    set_source_files_properties(${app_icon_macos} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    set(EXECUTABLE_EXTRA MACOSX_BUNDLE ${app_icon_macos})
     set(LIBS_EXTRA
             LLVMOption
             LLVMSupport
@@ -815,6 +819,8 @@ if(MSVC)
     set_property(TARGET kddockwidgets PROPERTY
             MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
     set(LIBLLDB_MODULE_NAME liblldb)
+elseif(APPLE)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY MACOSX_BUNDLE TRUE)
 endif()
 
 target_link_libraries(${PROJECT_NAME}
