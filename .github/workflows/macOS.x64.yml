@@ -55,12 +55,12 @@ jobs:
             -DKDDockWidgets_STATIC=ON \
             ${{github.workspace}}/XingDBG
           cmake --build . --parallel
-          cp XingDBG ${{github.workspace}}/out/
+          cp -R XingDBG.app ${{github.workspace}}/out/
 
       - name: Pack files
         working-directory: ${{github.workspace}}/out
         run: |
-          tar -cJf XingDBG-mac-x64.tar.xz XingDBG lldb-server
+          tar -cJf XingDBG-mac-x64.tar.xz XingDBG.app
 
       - uses: actions/upload-artifact@v2
         with:
