@@ -395,7 +395,10 @@ elseif(APPLE)
     set(MACOSX_BUNDLE_ICON_FILE XingDBG.icns)
     set(app_icon_macos "${CMAKE_CURRENT_SOURCE_DIR}/Resources/XingDBG.icns")
     set_source_files_properties(${app_icon_macos} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-    set(EXECUTABLE_EXTRA MACOSX_BUNDLE ${app_icon_macos})
+    set(debugserver "${LLVM_BINARY_DIR}/bin/debugserver")
+    set_source_files_properties(${debugserver} PROPERTIES MACOSX_PACKAGE_LOCATION "bin")
+
+    set(EXECUTABLE_EXTRA MACOSX_BUNDLE ${app_icon_macos} ${debugserver})
     set(LIBS_EXTRA
             LLVMOption
             LLVMSupport
