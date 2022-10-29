@@ -24,9 +24,9 @@ jobs:
       working-directory: ${{github.workspace}}
       shell: pwsh
       run: |
-        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.x64/releases/download/v0.1.0/qt.7z -OutFile qt.7z
+        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.arm64/releases/download/v0.1.0/qt.7z -OutFile qt.7z
         &7z x qt.7z -o${{github.workspace}}\out\
-        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.x64/releases/download/v0.1.0/lldb.7z -OutFile lldb.7z
+        Invoke-WebRequest -Uri https://github.com/XingDBG/dbg.deps.win.arm64/releases/download/v0.1.0/lldb.7z -OutFile lldb.7z
         &7z x lldb.7z -o${{github.workspace}}\out\
 
 
@@ -35,10 +35,10 @@ jobs:
         python-version: '3.10.7'
         architecture: 'x64' 
 
-    - name: Configure build for amd64
+    - name: Configure build for arm64
       uses: ilammy/msvc-dev-cmd@v1
       with:
-        arch: amd64
+        arch: amd64_arm64
         spectre: false
         vsversion: 2022
 
@@ -50,7 +50,7 @@ jobs:
         mkdir XingDBG
         cd XingDBG
         set INCLUDE=%VSINSTALLDIR%\DIA SDK\include;%INCLUDE%
-        set LIB=%VSINSTALLDIR%\DIA SDK\lib\amd64;%LIB%
+        set LIB=%VSINSTALLDIR%\DIA SDK\lib\arm64;%LIB%
         set CXXFLAGS="/DLLDB_API="
         cmake -G Ninja -DCMAKE_BUILD_TYPE=Release^
           -DQt6_DIR="${{github.workspace}}\out\qt\lib\cmake\Qt6"^
@@ -74,7 +74,7 @@ jobs:
     - name: Pack files
       working-directory: ${{github.workspace}}\out\
       run: |
-          &7z a XingDBG-win-x64.7z XingDBG.exe
+          &7z a XingDBG-win-arm64.7z XingDBG.exe
 
     - uses: actions/upload-artifact@v2
       with:
