@@ -175,9 +175,15 @@ void MainWindow::setupMenuToolBar()
 	{
 		core()->getProcess().Continue();
 	}, QKeySequence(Qt::Key_F9));
-	debugMenu->addAction(QIcon(":/img/pause.png"), tr("Pause"));
+	debugMenu->addAction(QIcon(":/img/pause.png"), tr("Pause"), this, []
+	{
+		core()->getProcess().Stop();
+	});
 	debugMenu->addAction(QIcon(":/img/restart.png"), tr("Restart"));
-	debugMenu->addAction(QIcon(":/img/stop.png"), tr("Stop"));
+	debugMenu->addAction(QIcon(":/img/stop.png"), tr("Stop"), this, []
+	{
+		core()->getProcess().Kill();
+	});
 	debugMenu->addSeparator();
 	auto stepOverAct = debugMenu->addAction(QIcon(":/img/step-over.png"), tr("Step over"), this, []
 	{
@@ -226,9 +232,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
 	if (core() && core()->isRunning())
 	{
 		if (QMessageBox::question(this, tr("Debugger is still running"),
-								  tr("Do you want to exit debugger?")) != QMessageBox::Yes)
+			tr("Do you want to exit debugger?")) != QMessageBox::Yes)
+		{
+			event->ignore();
 			return;
-		app()->resetCore();
+		}
+		core()->getProcess().Kill();
 	}
 	KDDockWidgets::MainWindow::closeEvent(event);
 }
