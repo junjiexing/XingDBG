@@ -22,6 +22,8 @@ DisassemblyView::DisassemblyView()
 	connect(app(), &App::onThreadFrameChanged, this, [this](uint64_t tid, int index)
 	{
 		auto process = core()->getProcess();
+		app()->setProcessId(process.GetProcessID());
+		app()->setThreadId(tid);
 		setThreadFrame(process.GetThreadByID(tid), index);
 	});
 
@@ -142,7 +144,10 @@ bool DisassemblyView::gotoAddress(uint64_t address)
 		sbAddress, lldb::eSymbolContextFunction | lldb::eSymbolContextSymbol);
 
 	if (!disasmSymbolContext(sc, target) && !disasmAddress(m_pcAddress.GetLoadAddress(target), target))
+	{
+		app()->e(tr("disasm address %1 failed.").arg(address, 16, 16, QChar('0')));
 		return false;
+	}
 
 	updateDisasmShow(sbAddress);
 
@@ -216,8 +221,13 @@ lldb::SBBreakpoint DisassemblyView::findBreakpointByAddress(lldb::addr_t addr)
 	return {};
 }
 
-void DisassemblyView::updateDisasmShow(lldb::SBAddress const& address)
+void DisassemblyView::updateDisasmShow(lldb::SBAddress& address)
 {
+	auto m = address.GetModule();
+	auto fs = m.GetFileSpec();
+	auto fname = fs.GetFilename();
+	app()->setModule(fname? fname: "<unknown>");
+	emit app()->updateTitle();
 	int i = 0;
 	for (; i != m_insts.GetSize(); ++i)
 	{

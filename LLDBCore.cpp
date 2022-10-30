@@ -13,6 +13,10 @@ LLDBCore::LLDBCore(const lldb::SBListener& listener)
 
 void LLDBCore::run()
 {
+	auto exec = m_target.GetExecutable();
+	app()->setExecutable(exec.GetFilename());
+	app()->setProcessId(m_process.GetProcessID());
+	emit app()->updateTitle();
 	for (;;)
 	{
 		if (!m_listener.WaitForEvent(std::numeric_limits<uint32_t>::max(), m_event))
@@ -20,6 +24,8 @@ void LLDBCore::run()
 			app()->w(tr("WaitForEvent failed, debug will stop."));
 			break;
 		}
+
+		app()->setThreadId(m_process.GetSelectedThread().GetThreadID());
 
 		const auto eventMask = m_event.GetType();
 

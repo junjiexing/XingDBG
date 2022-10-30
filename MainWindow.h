@@ -25,8 +25,10 @@ protected:
 private:
 	void setupDockWidgets();
 	void setupMenuToolBar();
+	void updateTitle();
 
 private:
+
 	KDDockWidgets::DockWidget* m_cpuDock = nullptr;
 	KDDockWidgets::DockWidget* m_regDock = nullptr;
 	KDDockWidgets::DockWidget* m_outputDock = nullptr;

@@ -32,6 +32,14 @@ public:
 	lldb::SBDebugger& getDebugger() {return m_debugger;}
 	LLDBCore *getDbgCore();
 
+	void setExecutable(QString const& fileName) { m_executable = fileName; }
+	QString const& getExecutable() const { return m_executable; }
+	void setModule(QString const& fileName) { m_module = fileName; }
+	QString const& getModule() const { return m_module; }
+	void setProcessId(uint64_t tid) { m_processId = tid; }
+	uint64_t getProcessId() const { return m_processId; }
+	void setThreadId(uint64_t tid) { m_threadId = tid; }
+	uint64_t getThreadId() const { return m_threadId; }
 
 signals:
 	void outputMsg(QString const &msg, QColor const &color);
@@ -44,10 +52,15 @@ signals:
 	void onBreakpointChange();
 
 	void openSourceFile(QString const& path);
-
+	void updateTitle();
 
 private:
 	App();
+
+	QString m_executable;
+	QString m_module;
+	uint64_t m_processId = 0;
+	uint64_t m_threadId = 0;
 
 	lldb::SBDebugger m_debugger;
 	std::unique_ptr<LLDBCore> lldbCore;

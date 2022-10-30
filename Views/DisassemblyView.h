@@ -21,7 +21,7 @@ public:
 	void init() override;
 protected:
 	void drawLine(QPainter *p, int scrollLine, int currLine) override;
-	void updateDisasmShow(lldb::SBAddress const& address);
+	void updateDisasmShow(lldb::SBAddress& address);
 	void contextMenuEvent(QContextMenuEvent *event) override;
 
 private:

@@ -41,6 +41,9 @@ MainWindow::MainWindow()
 		auto srcView = static_cast<SourceView*>(m_sourceDock->widget());
 		srcView->addSourceFile(path);
 	});
+
+	connect(app(), &App::updateTitle, this, [this] { updateTitle(); });
+
 }
 
 void MainWindow::setupDockWidgets()
@@ -240,6 +243,15 @@ void MainWindow::setupMenuToolBar()
 	auto helpToolBar = new QToolBar(tr("Help"), this);
 	helpToolBar->addAction(aboutAct);
 	addToolBar(helpToolBar);
+}
+
+void MainWindow::updateTitle()
+{
+	setWindowTitle(tr("%1 - PID: %2 - Module: %3 - Thread: %4")
+		.arg(app()->getExecutable())
+		.arg(app()->getProcessId())
+		.arg(app()->getModule())
+		.arg(app()->getThreadId()));
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
