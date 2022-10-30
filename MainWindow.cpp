@@ -179,7 +179,28 @@ void MainWindow::setupMenuToolBar()
 	{
 		core()->getProcess().Stop();
 	});
-	debugMenu->addAction(QIcon(":/img/restart.png"), tr("Restart"));
+	debugMenu->addAction(QIcon(":/img/restart.png"), tr("Restart"), this, [this]
+	{
+		if (!core())
+		{
+			app()->w(tr("debugee is not loaded."));
+			return;
+		}
+
+		auto info = core()->getLaunchInfo();
+		if (core()->isRunning())
+			core()->getProcess().Kill();
+
+		app()->resetCore();
+		auto success = core()->launch(info);
+		if (!success)
+		{
+			QMessageBox::warning(this, tr("Error"), tr("restart failed"));
+			return;
+		}
+
+		core()->start();
+	});
 	debugMenu->addAction(QIcon(":/img/stop.png"), tr("Stop"), this, []
 	{
 		core()->getProcess().Kill();

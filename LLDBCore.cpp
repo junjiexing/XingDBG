@@ -183,6 +183,16 @@ bool LLDBCore::launch(
         QString const& stderrPath, QString const& stdinPath, QStringList const& argList,
         QStringList const& envList, uint32_t launchFlags)
 {
+	m_launchInfo.exePath = exePath;
+	m_launchInfo.workingDir = workingDir;
+	m_launchInfo.stdoutPath = stdoutPath;
+	m_launchInfo.stderrPath = stderrPath;
+	m_launchInfo.stdinPath = stdinPath;
+	m_launchInfo.argList = argList;
+	m_launchInfo.envList = envList;
+	m_launchInfo.launchFlags = launchFlags;
+
+
 	lldb::SBError error;
     m_target = app()->getDebugger().CreateTarget(exePath.toLocal8Bit(), nullptr, nullptr, true, error);
 	if (error.Fail())
@@ -199,12 +209,12 @@ bool LLDBCore::launch(
         envs.emplace_back(s.toLocal8Bit());
     envs.emplace_back(nullptr);
 	auto listener = lldb::SBListener();
-    m_process = m_target.Launch(listener, args.data(), envs.data(),
-                                stdinPath.isEmpty()? nullptr : stdinPath.toLocal8Bit(),
-                                stdoutPath.isEmpty()? nullptr : stdoutPath.toLocal8Bit(),
-                                stderrPath.isEmpty()? nullptr : stdoutPath.toLocal8Bit(),
-                                workingDir.toLocal8Bit(),
-                                launchFlags, false, error);
+	m_process = m_target.Launch(listener, args.data(), envs.data(),
+		stdinPath.isEmpty() ? nullptr : stdinPath.toLocal8Bit(),
+		stdoutPath.isEmpty() ? nullptr : stdoutPath.toLocal8Bit(),
+		stderrPath.isEmpty() ? nullptr : stdoutPath.toLocal8Bit(),
+		workingDir.toLocal8Bit(),
+		launchFlags, false, error);
 
     if (error.Fail())
     {
@@ -213,6 +223,20 @@ bool LLDBCore::launch(
     }
 
     return true;
+}
+
+bool LLDBCore::launch(const LaunchInfo& launchInfo)
+{
+	return launch(
+		launchInfo.exePath,
+		launchInfo.workingDir,
+		launchInfo.stdoutPath,
+		launchInfo.stderrPath,
+		launchInfo.stdinPath,
+		launchInfo.argList,
+		launchInfo.envList,
+		launchInfo.launchFlags
+	);
 }
 
 bool LLDBCore::attach(uint64_t pid)

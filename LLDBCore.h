@@ -8,6 +8,19 @@
 #include <lldb/API/LLDB.h>
 #include <vector>
 
+struct LaunchInfo
+{
+	QString exePath;
+	QString workingDir;
+	QString stdoutPath;
+	QString stderrPath;
+	QString stdinPath;
+	QStringList argList;
+	QStringList envList;
+	uint32_t launchFlags;
+};
+
+
 class LLDBCore: public QThread
 {
 Q_OBJECT
@@ -24,10 +37,11 @@ public:
 				QString const &stderrPath, QString const &stdinPath, QStringList const &argList,
 				QStringList const &envList, uint32_t launchFlags);
 
+	bool launch(const LaunchInfo& launchInfo);
+
 	bool attach(uint64_t pid);
 
-	bool stop();
-
+	LaunchInfo const& getLaunchInfo() const { return m_launchInfo; }
 	lldb::SBProcess const &getProcess() const { return m_process; }
 	lldb::SBProcess &getProcess() { return m_process; }
 	lldb::SBTarget const &getTarget() const { return m_target; }
@@ -39,6 +53,8 @@ protected:
 
 private:
 	static std::unique_ptr<LLDBCore> instance;
+
+	LaunchInfo m_launchInfo;
 
 	lldb::SBListener m_listener;
 	lldb::SBTarget m_target;
