@@ -12,6 +12,10 @@ int main(int argc, char **argv)
     app.setOrganizationName("LaoXing");
     app.setApplicationName("XingDBG");
 
+	auto font = QApplication::font();
+	font.setStyleHint(QFont::Monospace);
+	QApplication::setFont(font);
+
     qApp->setStyle(QStyleFactory::create(QStringLiteral("Fusion")));
 
 

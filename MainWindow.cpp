@@ -45,16 +45,10 @@ MainWindow::MainWindow()
 
 void MainWindow::setupDockWidgets()
 {
-	// TODO:
-	QFont f{"Sarasa Fixed SC", 14};
-	f.setStyleHint(QFont::Monospace);
-
-
-
 	m_cpuDock = new KDDockWidgets::DockWidget(tr("CPU"));
 	auto disasmView = new DisassemblyView();
 	disasmView->init();
-	disasmView->updateFont(f);
+	disasmView->updateFont(font());	// TODO:
 	m_cpuDock->setWidget(disasmView);
 	m_cpuDock->setIcon(QIcon(":/img/cpu.png"));
 	addDockWidget(m_cpuDock, KDDockWidgets::Location_OnLeft);
@@ -75,7 +69,7 @@ void MainWindow::setupDockWidgets()
 	m_memoryDock = new KDDockWidgets::DockWidget(tr("Memory"));
 	auto memoryView = new MemoryView();
 	memoryView->init();
-	memoryView->updateFont(f);
+	memoryView->updateFont(font());	// TODO:
 	m_memoryDock->setWidget(memoryView);
 	addDockWidget(m_memoryDock, KDDockWidgets::Location_OnRight, m_outputDock);
 
