@@ -17,6 +17,7 @@
 #include "Views/SourceListView.h"
 #include "Views/BreakpointView.h"
 #include "Views/MemoryRegionView.h"
+#include "Views/VariableView.h"
 #include "Dialogs/SelectPlatformDlg.h"
 #include "Dialogs/OpenExeDlg.h"
 #include "Dialogs/AttachDlg.h"
@@ -80,6 +81,10 @@ void MainWindow::setupDockWidgets()
 	m_memoryRegionDock = new KDDockWidgets::DockWidget(tr("Memory Region"));
 	auto memoryRegionView = new MemoryRegionView();
 	m_memoryRegionDock->setWidget(memoryRegionView);
+
+	m_variableDock = new KDDockWidgets::DockWidget(tr("Variable"));
+	auto variableView = new VariableView();
+	m_variableDock->setWidget(variableView);
 
 
 
@@ -159,6 +164,7 @@ void MainWindow::setupMenuToolBar()
 	viewMenu->addAction(m_threadDock->icon(), tr("Thread"), [this] {m_threadDock->show(); });
 	viewMenu->addAction(m_bpDock->icon(), tr("Breakpoint"), [this] {m_bpDock->show(); });
 	viewMenu->addAction(m_sourceListDock->icon(), tr("Source List"), [this] {m_sourceListDock->show(); });
+	viewMenu->addAction(m_variableDock->icon(), tr("Variables"), [this] {m_variableDock->show(); });
 	viewMenu->addSeparator();
 	viewMenu->addAction(tr("Save layout"), this, [this]
 	{
