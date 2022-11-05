@@ -7,7 +7,8 @@ VariableView::VariableView(QWidget *parent)
 	: QWidget(parent)
 {
 	m_varTree = new QTreeWidget;
-	m_varTree->setColumnCount(3);
+	m_varTree->setColumnCount(4);
+	m_varTree->setHeaderLabels(QStringList() << tr("Name") << tr("Value") << tr("Type") << tr("Scope"));
 
 	connect(app(), &App::onStopState, this, [this]
 	{
@@ -35,17 +36,58 @@ VariableView::~VariableView()
 }
 
 
-QTreeWidgetItem* VariableView::newParentItem(QString const& name)
+const char* VariableView::convertValueType(lldb::ValueType t)
 {
-	auto item = new QTreeWidgetItem(m_varTree);
-	item->setTextAlignment(0, Qt::AlignLeft);
-	item->setTextAlignment(1, Qt::AlignLeft);
-	item->setTextAlignment(2, Qt::AlignLeft);
-	item->setText(0, name);
+	switch (t)
+	{
+	case lldb::eValueTypeVariableGlobal:
+		return "Global";
+	case lldb::eValueTypeVariableStatic:
+		return "Static";
+	case lldb::eValueTypeVariableArgument:
+		return "Argument";
+	case lldb::eValueTypeVariableLocal:
+		return "Local";
+	case lldb::eValueTypeRegister:
+		return "Register";
+	case lldb::eValueTypeRegisterSet:
+		return "RegisterSet";
+	case lldb::eValueTypeConstResult:
+		return "Const";
+	case lldb::eValueTypeVariableThreadLocal:
+		return "ThreadLocal";
+	default:
+		break;
+	}
 
-	return item;
+	return "None";
 }
 
+void VariableView::setItemsHide()
+{
+	for (auto i = 0; i < m_varTree->topLevelItemCount(); ++i)
+	{
+		auto item = m_varTree->topLevelItem(i);
+		item->setHidden(true);
+		item->setForeground(1, QBrush());
+	}
+}
+
+void VariableView::removeHiddenItems()
+{
+	std::vector<QTreeWidgetItem*> itemsToRemove;
+	for (auto i = 0; i < m_varTree->topLevelItemCount(); ++i)
+	{
+		auto item = m_varTree->topLevelItem(i);
+		if (item->isHidden())
+			itemsToRemove.emplace_back(item);
+	}
+
+	for (auto item : itemsToRemove)
+	{
+		delete item;
+	}
+}
 
 void VariableView::refresh()
 {
@@ -56,49 +98,44 @@ void VariableView::refresh()
 		return;
 	}
 
-	auto aItem = newParentItem("Argument:");
-	auto lItem = newParentItem("Local:");
-	auto sItem = newParentItem("Static:");
-	auto gItem = newParentItem("Global:");
-	auto cItem = newParentItem("Const:");
-	auto tItem = newParentItem("Thread local:");
+	setItemsHide();
 
 	for (auto i = 0; i < vars.GetSize(); ++i)
 	{
 		auto v = vars.GetValueAtIndex(i);
-		switch (v.GetValueType())
-		{
-		case lldb::eValueTypeVariableGlobal:
-			addVariable(gItem, v);
-			break;
-		case lldb::eValueTypeVariableStatic:
-			addVariable(sItem, v);
-			break;
-		case lldb::eValueTypeVariableArgument:
-			addVariable(aItem, v);
-			break;
-		case lldb::eValueTypeVariableLocal:
-			addVariable(lItem, v);
-			break;
-		case lldb::eValueTypeConstResult:
-			addVariable(cItem, v);
-			break;
-		case lldb::eValueTypeVariableThreadLocal:
-			addVariable(tItem, v);
-			break;
-		default:
-			break;
-		}
+		addVariable(v);
 	}
+
+	removeHiddenItems();
 }
 
-void VariableView::addVariable(QTreeWidgetItem* parent, lldb::SBValue v)
+void VariableView::addVariable(lldb::SBValue v)
 {
-	auto item = new QTreeWidgetItem(parent);
+	for (auto i = 0; i < m_varTree->topLevelItemCount(); ++i)
+	{
+		auto item = m_varTree->topLevelItem(i);
+		if (item->text(0) == v.GetName() && item->text(3) == convertValueType(v.GetValueType()))
+		{
+			item->setHidden(false);
+			if (item->text(1) != v.GetValue())
+			{
+				item->setText(1, v.GetValue());
+				item->setForeground(1, Qt::red);
+			}
+			item->setText(2, v.GetDisplayTypeName());
+			return;
+		}
+	}
+
+	auto item = new QTreeWidgetItem;
 	item->setTextAlignment(0, Qt::AlignLeft);
 	item->setTextAlignment(1, Qt::AlignLeft);
 	item->setTextAlignment(2, Qt::AlignLeft);
 	item->setText(0, v.GetName());
-	item->setText(1, v.GetDisplayTypeName());
-	item->setText(2, v.GetValue());
+	item->setText(1, v.GetValue());	// TODO: Ö§³Östd::string vectorµÈ
+	item->setText(2, v.GetDisplayTypeName());
+	item->setText(3, convertValueType(v.GetValueType()));
+	item->setHidden(false);
+
+	m_varTree->addTopLevelItem(item);
 }

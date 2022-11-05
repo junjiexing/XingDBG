@@ -19,8 +19,10 @@ public:
 	void refresh();
 
 private:
-	QTreeWidgetItem* newParentItem(QString const& name);
-	void addVariable(QTreeWidgetItem* parent, lldb::SBValue v);
+	const char* convertValueType(lldb::ValueType t);
+	void setItemsHide();
+	void removeHiddenItems();
+	void addVariable(lldb::SBValue v);
 
 private:
 	QTreeWidget* m_varTree;
