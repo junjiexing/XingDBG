@@ -808,6 +808,8 @@ add_executable(${PROJECT_NAME}
         Views/MemoryView.h
         Views/AbstractTableView.cpp
         Views/AbstractTableView.h
+        Views/MemoryRegionView.cpp
+        Views/MemoryRegionView.h
         Widgets/CodeEditor.h
         Widgets/CodeEditor.cpp
         Widgets/Highlighter.h

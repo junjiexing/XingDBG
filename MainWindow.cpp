@@ -16,6 +16,7 @@
 #include "Views/SourceView.h"
 #include "Views/SourceListView.h"
 #include "Views/BreakpointView.h"
+#include "Views/MemoryRegionView.h"
 #include "Dialogs/SelectPlatformDlg.h"
 #include "Dialogs/OpenExeDlg.h"
 #include "Dialogs/AttachDlg.h"
@@ -75,6 +76,10 @@ void MainWindow::setupDockWidgets()
 	memoryView->updateFont(font());	// TODO:
 	m_memoryDock->setWidget(memoryView);
 	addDockWidget(m_memoryDock, KDDockWidgets::Location_OnRight, m_outputDock);
+
+	m_memoryRegionDock = new KDDockWidgets::DockWidget(tr("Memory Region"));
+	auto memoryRegionView = new MemoryRegionView();
+	m_memoryRegionDock->setWidget(memoryRegionView);
 
 
 
@@ -149,6 +154,7 @@ void MainWindow::setupMenuToolBar()
 	viewMenu->addAction(m_regDock->icon(), tr("Register"), [this] {m_regDock->show(); });
 	viewMenu->addAction(m_callStackDock->icon(), tr("Call stack"), [this] {m_callStackDock->show(); });
 	viewMenu->addAction(m_memoryDock->icon(), tr("Memory"), [this] {m_memoryDock->show(); });
+	viewMenu->addAction(m_memoryRegionDock->icon(), tr("Memory Region"), [this] {m_memoryRegionDock->show(); });
 	viewMenu->addAction(m_symbolDock->icon(), tr("Symbol"), [this] {m_symbolDock->show(); });
 	viewMenu->addAction(m_threadDock->icon(), tr("Thread"), [this] {m_threadDock->show(); });
 	viewMenu->addAction(m_bpDock->icon(), tr("Breakpoint"), [this] {m_bpDock->show(); });
