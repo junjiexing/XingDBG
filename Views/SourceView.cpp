@@ -18,14 +18,29 @@ SourceView::SourceView()
 	auto lay = new QVBoxLayout(this);
 	lay->addWidget(m_tab);
 
-	auto bpAct = new QAction;
-	bpAct->setShortcut(Qt::Key_F2);
-	bpAct->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-	connect(bpAct, &QAction::triggered, this, [] 
-		{
-			//TODO:
-		});
-	addAction(bpAct);
+	auto stepOverAct = new QAction;
+	stepOverAct->setShortcut(Qt::Key_F8);
+	stepOverAct->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+	connect(stepOverAct, &QAction::triggered, this, [this]
+	{
+		lldb::SBError err;
+		core()->getProcess().GetSelectedThread().StepOver(lldb::eOnlyDuringStepping, err);
+		if (err.Fail())
+			app()->e(tr("Step over failed: ").append(err.GetCString()));
+	});
+	addAction(stepOverAct);
+
+	auto stepIntoAct = new QAction;
+	stepIntoAct->setShortcut(Qt::Key_F7);
+	stepIntoAct->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+	connect(stepIntoAct, &QAction::triggered, this, [this]
+	{
+		lldb::SBError err;
+		core()->getProcess().GetSelectedThread().StepInto(nullptr, LLDB_INVALID_LINE_NUMBER, err, lldb::eOnlyDuringStepping);
+		if (err.Fail())
+			app()->e(tr("Step into failed: ").append(err.GetCString()));
+	});
+	addAction(stepIntoAct);
 
 	connect(app(), &App::onBreakpointChange, this, &SourceView::updateBreakpoints);
 	connect(app(), &App::onStopState, this, &SourceView::updateCurrentLine);
