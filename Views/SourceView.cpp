@@ -60,60 +60,60 @@ void SourceView::addSourceFile(QString const& path)
 	edt->setProperty("path", path);
 
 	edt->setOnSwitchBreakpoint([path, this](int line)
+	{
+		auto target = core()->getTarget();
+		bool found = false;
+		for (int i = 0; i < target.GetNumBreakpoints(); ++i)
 		{
-			auto target = core()->getTarget();
-			bool found = false;
-			for (int i = 0; i < target.GetNumBreakpoints(); ++i)
-			{
-				auto bp = target.GetBreakpointAtIndex(i);
+			auto bp = target.GetBreakpointAtIndex(i);
 
-				auto locNum = bp.GetNumLocations();
-				for (int j = 0; j < bp.GetNumLocations(); ++j)
+			auto locNum = bp.GetNumLocations();
+			for (int j = 0; j < bp.GetNumLocations(); ++j)
+			{
+				auto loc = bp.GetLocationAtIndex(j);
+				auto lineEntry = loc.GetAddress().GetLineEntry();
+				if (!lineEntry)
 				{
-					auto loc = bp.GetLocationAtIndex(j);
-					auto lineEntry = loc.GetAddress().GetLineEntry();
-					if (!lineEntry)
+					continue;
+				}
+
+				char pathBuf[1000];
+				lineEntry.GetFileSpec().GetPath(pathBuf, 1000);
+				if (path == pathBuf && lineEntry.GetLine() == line)
+				{
+					found = true;
+					if (locNum > 1
+						&& QMessageBox::question(this, tr("Warning"),
+							tr("This breakpoint has more than one locations,"
+								" the operation will delete all locations,"
+								" do you want to continue?")) != QMessageBox::Yes)
 					{
-						continue;
+						break;
 					}
 
-					char pathBuf[1000];
-					lineEntry.GetFileSpec().GetPath(pathBuf, 1000);
-					if (path == pathBuf)
+					if (target.BreakpointDelete(bp.GetID()))
 					{
-						found = true;
-						if (locNum > 1
-							&& QMessageBox::question(this, tr("Warning"),
-								tr("This breakpoint has more than one locations,"
-									" the operation will delete all locations,"
-									" do you want to continue?")) != QMessageBox::Yes)
-						{
-							break;
-						}
-
-						if (target.BreakpointDelete(bp.GetID()))
-						{
-							app()->i(tr("delete breakpoint success"));
-						}
-						else
-						{
-							app()->e(tr("delete breakpoint failed"));
-						}
+						app()->i(tr("delete breakpoint success"));
+					}
+					else
+					{
+						app()->e(tr("delete breakpoint failed"));
 					}
 				}
 			}
-			if (!found)
+		}
+		if (!found)
+		{
+			auto bp = target.BreakpointCreateByLocation(path.toLocal8Bit(), line);
+			if (!bp.IsValid())
 			{
-				auto bp = target.BreakpointCreateByLocation(path.toLocal8Bit(), line);
-				if (!bp.IsValid())
-				{
-					app()->e(tr("create breakpoint failed"));
-					return;
-				}
-
-				app()->i(tr("create breakpoint success, id: %1").arg(bp.GetID()));
+				app()->e(tr("create breakpoint failed"));
+				return;
 			}
-		});
+
+			app()->i(tr("create breakpoint success, id: %1").arg(bp.GetID()));
+		}
+	});
 
 	auto i = m_tab->addTab(edt, QFileInfo(path).fileName());
 	m_tab->setCurrentIndex(i);
