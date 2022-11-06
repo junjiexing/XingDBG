@@ -7,6 +7,7 @@
 #include "Utils.h"
 #include <QContextMenuEvent>
 #include <QtWidgets>
+#include <QApplication>
 
 
 DisassemblyView::DisassemblyView()
@@ -124,6 +125,11 @@ void DisassemblyView::init()
 
 bool DisassemblyView::gotoAddress(uint64_t address)
 {
+	if (!core())
+	{
+		return false;
+	}
+
 	auto target = core()->getTarget();
 
 	lldb::SBAddress sbAddress;
@@ -249,11 +255,12 @@ void DisassemblyView::updateDisasmShow(lldb::SBAddress& address)
 		// TODO: 花指令 or 反汇编错误？
 	}
 }
+
 void DisassemblyView::contextMenuEvent(QContextMenuEvent *event)
 {
 	//TODO: action放到构造函数.
 	QMenu menu;
-	menu.addAction(tr("Go to"), this, [this]
+	menu.addAction(tr("Go to address"), this, [this]
 	{
 		QDialog dlg(this);
 		dlg.setWindowTitle(tr("Go to address"));
@@ -282,6 +289,81 @@ void DisassemblyView::contextMenuEvent(QContextMenuEvent *event)
 		if (!gotoAddress(address))
 			QMessageBox::warning(this, tr("Error"), tr("disasm failed"));
 	});
+
+	menu.addSeparator();
+
+	menu.addAction(tr("Copy Line"), this, [this]
+	{
+		if (!core()) return;
+
+		if (m_selectedLine < 0 || m_selectedLine >= m_insts.GetSize())
+		{
+			app()->w(tr("Copy failed"));
+			return;
+		}
+
+		auto target = core()->getTarget();
+		auto inst = m_insts.GetInstructionAtIndex(m_selectedLine);
+		auto line = QString("%1\t%2\t;%3")
+			.arg(Utils::hex(inst.GetAddress().GetLoadAddress(target)))
+			.arg(QString(inst.GetMnemonic(target)) + " " + inst.GetOperands(target))
+			.arg(inst.GetComment(target));
+
+		QApplication::clipboard()->setText(line);
+	});
+	menu.addAction(tr("Copy Address"), this, [this]
+	{
+		if (!core()) return;
+
+		if (m_selectedLine < 0 || m_selectedLine >= m_insts.GetSize())
+		{
+			app()->w(tr("Copy failed"));
+			return;
+		}
+
+		auto target = core()->getTarget();
+		auto inst = m_insts.GetInstructionAtIndex(m_selectedLine);
+
+		QApplication::clipboard()->setText(Utils::hex(inst.GetAddress().GetLoadAddress(target)));
+	});
+	menu.addAction(tr("Copy File Address"), this, [this]
+	{
+		if (!core()) return;
+
+		if (m_selectedLine < 0 || m_selectedLine >= m_insts.GetSize())
+		{
+			app()->w(tr("Copy failed"));
+			return;
+		}
+
+		auto target = core()->getTarget();
+		auto inst = m_insts.GetInstructionAtIndex(m_selectedLine);
+
+		QApplication::clipboard()->setText(Utils::hex(inst.GetAddress().GetFileAddress()));
+	});
+	menu.addAction(tr("Copy Offset"), this, [this]
+	{
+		if (!core()) return;
+
+		if (m_selectedLine < 0 || m_selectedLine >= m_insts.GetSize())
+		{
+			app()->w(tr("Copy failed"));
+			return;
+		}
+
+		auto target = core()->getTarget();
+		auto inst = m_insts.GetInstructionAtIndex(m_selectedLine);
+
+		QApplication::clipboard()->setText(Utils::hex(inst.GetAddress().GetOffset()));
+	});
+
+	//menu.addAction(tr("Copy Selections"), this, [this]
+	//	{
+	// TODO: 
+	//	});
+
+	// TODO: jump to source
+
 
 	menu.exec(event->globalPos());
 }

@@ -73,6 +73,7 @@ void SourceView::addSourceFile(QString const& path)
 	edt->setPlainText(QString::fromLocal8Bit(bytes));
 	edt->setReadOnly(true);
 	edt->setProperty("path", path);
+	edt->setTextInteractionFlags(edt->textInteractionFlags() | Qt::TextSelectableByKeyboard | Qt::TextSelectableByMouse);
 
 	edt->setOnSwitchBreakpoint([path, this](int line)
 	{

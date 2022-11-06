@@ -15,7 +15,7 @@ RegisterView::RegisterView()
 	: QTreeWidget(nullptr)
 {
 	setColumnCount(2);
-	setHeaderHidden(true);
+	setHeaderLabels(QStringList() << tr("Name") << tr("Value"));
 	setFrameStyle(QFrame::NoFrame);
 
 	connect(app(), &App::onStopState, this, [this]
