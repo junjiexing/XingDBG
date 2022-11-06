@@ -184,6 +184,7 @@ void MainWindow::setupMenuToolBar()
 	{
 		core()->getProcess().Continue();
 	}, QKeySequence(Qt::Key_F9));
+	runAct->setShortcutContext(Qt::WindowShortcut);
 	debugMenu->addAction(QIcon(":/img/pause.png"), tr("Pause"), this, []
 	{
 		core()->getProcess().Stop();
@@ -223,6 +224,7 @@ void MainWindow::setupMenuToolBar()
 		if (err.Fail())
 			app()->e(tr("Step over instruction failed: ").append(err.GetCString()));
 	}, QKeySequence(Qt::Key_F8));
+	stepOverAct->setShortcutContext(Qt::WindowShortcut);
 	auto stepIntoAct = debugMenu->addAction(QIcon(":/img/step-into.png"), tr("Step into"), this, []
 	{
 		//		core()->getProcess().GetSelectedThread().StepInto();
@@ -231,10 +233,8 @@ void MainWindow::setupMenuToolBar()
 		if (err.Fail())
 			app()->e(tr("Step into instruction failed: ") + err.GetCString());
 	}, QKeySequence(Qt::Key_F7));
-	debugMenu->addAction(tr("Switch breakpoint"), this, []
-	{
-		//TODO:
-	});
+	stepIntoAct->setShortcutContext(Qt::WindowShortcut);
+
 	auto debugToolBar = new QToolBar(tr("Debug"), this);
 	debugToolBar->addAction(runAct);
 	debugToolBar->addAction(stepOverAct);
