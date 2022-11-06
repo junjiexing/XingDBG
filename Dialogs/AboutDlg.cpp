@@ -21,7 +21,7 @@ AboutDlg::AboutDlg(QWidget *parent)
 	blogLab->setTextInteractionFlags(Qt::TextBrowserInteraction);
 	blogLab->setOpenExternalLinks(true);
 	auto githubLab = new QLabel;
-	githubLab->setText("github: <a href='https://github.com/XingDBG/XingDBG'>https://github.com/XingDBG/XingDBG</a>");
+	githubLab->setText("github: <a href='https://github.com/junjiexing/XingDBG'>https://github.com/junjiexing/XingDBG</a>");
 	githubLab->setTextFormat(Qt::RichText);
 	githubLab->setTextInteractionFlags(Qt::TextBrowserInteraction);
 	githubLab->setOpenExternalLinks(true);

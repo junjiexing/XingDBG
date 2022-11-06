@@ -1,4 +1,4 @@
-name: WindowsBuild
+name: Windows arm64
 
 on: [push, pull_request]
 
